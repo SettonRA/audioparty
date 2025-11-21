@@ -19,8 +19,14 @@ const roomManager = new RoomManager();
 // Serve static files from client directory
 app.use(express.static(path.join(__dirname, '../client')));
 
-// Catch-all route to serve index.html for any path (enables URL-based room joining)
-app.get('*', (req, res) => {
+// Catch-all route to serve index.html for room codes (enables URL-based room joining)
+// Only match paths that look like room codes (6 alphanumeric characters)
+app.get('/:roomCode([A-Z0-9]{6})', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/index.html'));
+});
+
+// Root path
+app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/index.html'));
 });
 

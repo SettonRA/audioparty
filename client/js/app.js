@@ -13,18 +13,26 @@ let pendingRoomCode = null;
 // Check for room code in URL path on load
 window.addEventListener('DOMContentLoaded', () => {
   const pathParts = window.location.pathname.split('/').filter(p => p);
+  console.log('URL path parts:', pathParts);
+  
   if (pathParts.length > 0) {
     const roomCode = pathParts[0].toUpperCase();
+    console.log('Checking room code:', roomCode);
+    
     // Validate it's a 6-character alphanumeric code
     if (/^[A-Z0-9]{6}$/.test(roomCode)) {
+      console.log('Valid room code detected, switching to listener mode');
       pendingRoomCode = roomCode;
       currentMode = 'listener';
       showScreen('listener');
       
       // Wait for socket to connect before joining
       if (socket.connected) {
+        console.log('Socket already connected, joining immediately');
         joinRoom(roomCode);
         pendingRoomCode = null;
+      } else {
+        console.log('Socket not connected yet, waiting...');
       }
     }
   }
