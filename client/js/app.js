@@ -9,6 +9,8 @@ const screens = {
 
 let currentMode = null; // 'host' or 'listener'
 let pendingRoomCode = null;
+let currentRoomCode = null;
+let currentShareLink = null;
 
 // Check for room code in URL path on load
 window.addEventListener('DOMContentLoaded', () => {
@@ -100,15 +102,12 @@ function showScreen(screenName) {
 function createRoom() {
   socket.emit('create-room', (response) => {
     if (response.success) {
-      const roomCode = response.roomId;
-      document.getElementById('host-room-code').textContent = roomCode;
-      document.getElementById('share-code').textContent = roomCode;
+      currentRoomCode = response.roomId;
+      currentShareLink = `${window.location.origin}/${currentRoomCode}`;
       
-      // Update share link
-      const shareUrl = `${window.location.origin}/${roomCode}`;
-      document.getElementById('share-link').value = shareUrl;
+      document.getElementById('host-room-code').textContent = currentRoomCode;
       
-      console.log('Room created:', roomCode);
+      console.log('Room created:', currentRoomCode);
     } else {
       alert('Failed to create room. Please try again.');
       showScreen('landing');
@@ -162,29 +161,41 @@ function showError(message) {
   document.getElementById('error-message').textContent = message;
 }
 
-// Copy link button
-document.getElementById('copy-link-btn').addEventListener('click', async () => {
-  const linkInput = document.getElementById('share-link');
-  const copyBtn = document.getElementById('copy-link-btn');
+// Copy code button
+document.getElementById('copy-code-btn').addEventListener('click', async () => {
+  const copyBtn = document.getElementById('copy-code-btn');
+  const originalText = copyBtn.textContent;
   
   try {
-    await navigator.clipboard.writeText(linkInput.value);
-    copyBtn.textContent = 'Copied!';
+    await navigator.clipboard.writeText(currentRoomCode);
+    copyBtn.textContent = '✓ Copied!';
     copyBtn.classList.add('copied');
     
     setTimeout(() => {
-      copyBtn.textContent = 'Copy';
+      copyBtn.textContent = originalText;
       copyBtn.classList.remove('copied');
     }, 2000);
   } catch (err) {
-    // Fallback for browsers that don't support clipboard API
-    linkInput.select();
-    document.execCommand('copy');
-    copyBtn.textContent = 'Copied!';
+    console.error('Failed to copy code:', err);
+  }
+});
+
+// Copy join link button
+document.getElementById('copy-link-btn').addEventListener('click', async () => {
+  const copyBtn = document.getElementById('copy-link-btn');
+  const originalText = copyBtn.textContent;
+  
+  try {
+    await navigator.clipboard.writeText(currentShareLink);
+    copyBtn.textContent = '✓ Copied!';
+    copyBtn.classList.add('copied');
     
     setTimeout(() => {
-      copyBtn.textContent = 'Copy';
+      copyBtn.textContent = originalText;
+      copyBtn.classList.remove('copied');
     }, 2000);
+  } catch (err) {
+    console.error('Failed to copy link:', err);
   }
 });
 

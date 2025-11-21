@@ -287,70 +287,18 @@ input[type="text"]:focus {
   50% { opacity: 0.5; transform: scale(1.2); }
 }
 
-/* Streaming Info */
-.streaming-info {
-  color: var(--text-secondary);
-  margin-bottom: 24px;
-}
-
-.share-code {
-  display: inline-block;
-  background: var(--surface);
-  padding: 8px 16px;
-  border-radius: 6px;
-}
-
-/* Share Link Box */
-.share-link-box {
-  margin-bottom: 24px;
-}
-
-.share-link-box label {
-  display: block;
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  margin-bottom: 8px;
-}
-
-.input-group {
+/* Share Buttons */
+.share-buttons {
   display: flex;
-  gap: 8px;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
-.input-group input[type="text"] {
+.share-buttons button {
   flex: 1;
-  padding: 12px 16px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text-primary);
-  font-size: 0.875rem;
-  font-family: monospace;
 }
 
-.input-group input[type="text"]:focus {
-  outline: none;
-  border-color: var(--primary-color);
-}
-
-.copy-btn {
-  padding: 12px 24px;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-
-.copy-btn:hover {
-  background: var(--primary-hover);
-  transform: translateY(-2px);
-}
-
-.copy-btn.copied {
+.share-buttons button.copied {
   background: var(--success-color);
 }
 
