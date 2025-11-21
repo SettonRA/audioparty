@@ -137,9 +137,9 @@ socket.on('offer', async (data) => {
 
 // Handle ICE candidates from host
 socket.on('ice-candidate', async (data) => {
-  console.log('Received ICE candidate from host, sender:', data.sender, 'expected:', hostId);
+  console.log('Received ICE candidate, sender:', data.sender);
   
-  if (data.sender === hostId && peerConnection) {
+  if (peerConnection) {
     // If remote description not set yet, queue the candidate
     if (!peerConnection.remoteDescription) {
       console.log('Queueing ICE candidate - remote description not set yet');
@@ -154,7 +154,7 @@ socket.on('ice-candidate', async (data) => {
       console.error('Error adding ICE candidate:', error);
     }
   } else {
-    console.log('Ignoring ICE candidate - no peer connection or wrong sender');
+    console.log('Ignoring ICE candidate - no peer connection');
   }
 });
 
