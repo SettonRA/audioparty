@@ -87,11 +87,19 @@ function setupPeerConnection() {
 socket.on('offer', async (data) => {
   console.log('Received offer from host');
   
+  if (!peerConnection) {
+    console.error('Peer connection not initialized');
+    showError('Connection not ready');
+    return;
+  }
+  
   try {
     await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+    console.log('Remote description set');
     
     const answer = await peerConnection.createAnswer();
     await peerConnection.setLocalDescription(answer);
+    console.log('Local description set');
     
     socket.emit('answer', {
       target: hostId,
@@ -101,7 +109,7 @@ socket.on('offer', async (data) => {
     console.log('Answer sent to host');
   } catch (error) {
     console.error('Error handling offer:', error);
-    showError('Failed to establish connection');
+    showError('Failed to establish connection: ' + error.message);
   }
 });
 

@@ -123,10 +123,20 @@ async function createPeerConnection(listenerId) {
     }
   };
 
+  // Monitor connection state
+  pc.onconnectionstatechange = () => {
+    console.log(`[${listenerId}] Connection state:`, pc.connectionState);
+  };
+  
+  pc.oniceconnectionstatechange = () => {
+    console.log(`[${listenerId}] ICE connection state:`, pc.iceConnectionState);
+  };
+
   // Create and send offer
   try {
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
+    console.log('Local description set for:', listenerId);
     
     socket.emit('offer', {
       target: listenerId,
