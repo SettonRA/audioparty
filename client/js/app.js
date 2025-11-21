@@ -117,17 +117,30 @@ function createRoom() {
 }
 
 function joinRoom(roomCode) {
+  console.log('Attempting to join room:', roomCode);
   socket.emit('join-room', roomCode, (response) => {
-    console.log('join-room response:', JSON.stringify(response));
-    if (response.success) {
+    console.log('join-room callback received');
+    console.log('Response type:', typeof response);
+    console.log('Response object keys:', Object.keys(response));
+    console.log('Full response:', JSON.stringify(response, null, 2));
+    
+    // Check if response has the expected structure
+    if (response && response.success) {
       document.getElementById('listener-room-code').textContent = roomCode;
       console.log('Joined room:', roomCode, 'Host ID:', response.hostId);
-      console.log('Response object keys:', Object.keys(response));
-      console.log('Full response:', response);
+      
+      if (!response.hostId) {
+        console.error('ERROR: hostId is missing from response!');
+        showError('Server error: missing host information');
+        return;
+      }
+      
       // Listener logic will handle connection
       initListener(response.hostId);
     } else {
-      showError(response.error || 'Failed to join room');
+      const errorMsg = response.error || response.message || 'Failed to join room';
+      console.error('Join room failed:', errorMsg);
+      showError(errorMsg);
     }
   });
 }
