@@ -74,6 +74,11 @@ io.on('connection', (socket) => {
       participantCount: room.participants.length
     });
 
+    // Notify all listeners in the room about the updated count
+    io.to(roomId).emit('participant-count-updated', {
+      participantCount: room.participants.length
+    });
+
     const responseData = { 
       success: true,
       roomId: roomId,
@@ -131,6 +136,12 @@ io.on('connection', (socket) => {
           listenerId: socket.id,
           participantCount: room.participants.length
         });
+        
+        // Notify all remaining listeners in the room about the updated count
+        io.to(room.id).emit('participant-count-updated', {
+          participantCount: room.participants.length
+        });
+        
         console.log(`User ${socket.id} left room ${room.id}`);
       }
     }

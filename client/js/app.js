@@ -129,6 +129,7 @@ socket.on('join-room-response', (response) => {
   if (response && response.success) {
     const roomCode = response.roomId;
     document.getElementById('listener-room-code').textContent = roomCode;
+    document.getElementById('listener-participant-count').textContent = response.participantCount || '-';
     console.log('Joined room:', roomCode, 'Host ID:', response.hostId);
     
     if (!response.hostId) {
@@ -143,6 +144,14 @@ socket.on('join-room-response', (response) => {
     const errorMsg = response.error || 'Failed to join room';
     console.error('Join room failed:', errorMsg);
     showError(errorMsg);
+  }
+});
+
+// Listen for participant count updates
+socket.on('participant-count-updated', (data) => {
+  if (currentMode === 'listener') {
+    console.log('Participant count updated:', data.participantCount);
+    document.getElementById('listener-participant-count').textContent = data.participantCount;
   }
 });
 
