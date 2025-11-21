@@ -110,8 +110,6 @@ socket.on('listener-left', (data) => {
     pc.close();
     peerConnections.delete(data.listenerId);
   }
-  
-  updateListenersList();
 });
 
 async function createPeerConnection(listenerId) {
@@ -166,8 +164,6 @@ async function createPeerConnection(listenerId) {
   } catch (error) {
     console.error('Error creating offer:', error);
   }
-
-  updateListenersList();
 }
 
 // Handle answer from listener
@@ -200,17 +196,4 @@ socket.on('ice-candidate', async (data) => {
 
 function updateParticipantCount(count) {
   document.getElementById('host-participant-count').textContent = count;
-}
-
-function updateListenersList() {
-  const listenersList = document.getElementById('listeners-list');
-  const connectedListeners = Array.from(peerConnections.keys());
-  
-  if (connectedListeners.length === 0) {
-    listenersList.innerHTML = '<li class="empty-state">Waiting for listeners to join...</li>';
-  } else {
-    listenersList.innerHTML = connectedListeners
-      .map((id, index) => `<li>Listener ${index + 1} <span class="status-dot"></span></li>`)
-      .join('');
-  }
 }
