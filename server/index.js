@@ -19,6 +19,11 @@ const roomManager = new RoomManager();
 // Serve static files from client directory
 app.use(express.static(path.join(__dirname, '../client')));
 
+// Catch-all route to serve index.html for any path (enables URL-based room joining)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/index.html'));
+});
+
 // Socket.io connection handling
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
