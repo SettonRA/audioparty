@@ -17,7 +17,8 @@ volumeSlider.addEventListener('input', (e) => {
 // Leave party button
 document.getElementById('leave-party-btn').addEventListener('click', () => {
   disconnectFromParty();
-  location.reload();
+  // Redirect to home page instead of reload to avoid auto-rejoin
+  window.location.href = '/';
 });
 
 function initListener(receivedHostId) {
