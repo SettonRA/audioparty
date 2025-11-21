@@ -8,6 +8,7 @@ const screens = {
 };
 
 let currentMode = null; // 'host' or 'listener'
+let pendingRoomCode = null;
 
 // Check for room code in URL path on load
 window.addEventListener('DOMContentLoaded', () => {
@@ -16,10 +17,26 @@ window.addEventListener('DOMContentLoaded', () => {
     const roomCode = pathParts[0].toUpperCase();
     // Validate it's a 6-character alphanumeric code
     if (/^[A-Z0-9]{6}$/.test(roomCode)) {
+      pendingRoomCode = roomCode;
       currentMode = 'listener';
       showScreen('listener');
-      joinRoom(roomCode);
+      
+      // Wait for socket to connect before joining
+      if (socket.connected) {
+        joinRoom(roomCode);
+        pendingRoomCode = null;
+      }
     }
+  }
+});
+
+// Handle socket connection
+socket.on('connect', () => {
+  console.log('Connected to server');
+  // If we have a pending room code from URL, join now
+  if (pendingRoomCode) {
+    joinRoom(pendingRoomCode);
+    pendingRoomCode = null;
   }
 });
 
