@@ -9,6 +9,20 @@ const screens = {
 
 let currentMode = null; // 'host' or 'listener'
 
+// Check for room code in URL path on load
+window.addEventListener('DOMContentLoaded', () => {
+  const pathParts = window.location.pathname.split('/').filter(p => p);
+  if (pathParts.length > 0) {
+    const roomCode = pathParts[0].toUpperCase();
+    // Validate it's a 6-character alphanumeric code
+    if (/^[A-Z0-9]{6}$/.test(roomCode)) {
+      currentMode = 'listener';
+      showScreen('listener');
+      joinRoom(roomCode);
+    }
+  }
+});
+
 // Landing screen controls
 document.getElementById('host-btn').addEventListener('click', () => {
   currentMode = 'host';
@@ -64,6 +78,11 @@ function createRoom() {
       const roomCode = response.roomId;
       document.getElementById('host-room-code').textContent = roomCode;
       document.getElementById('share-code').textContent = roomCode;
+      
+      // Update share link
+      const shareUrl = `${window.location.origin}/${roomCode}`;
+      document.getElementById('share-link').value = shareUrl;
+      
       console.log('Room created:', roomCode);
     } else {
       alert('Failed to create room. Please try again.');
@@ -91,6 +110,32 @@ function showError(message) {
   document.getElementById('listener-error').classList.remove('hidden');
   document.getElementById('error-message').textContent = message;
 }
+
+// Copy link button
+document.getElementById('copy-link-btn').addEventListener('click', async () => {
+  const linkInput = document.getElementById('share-link');
+  const copyBtn = document.getElementById('copy-link-btn');
+  
+  try {
+    await navigator.clipboard.writeText(linkInput.value);
+    copyBtn.textContent = 'Copied!';
+    copyBtn.classList.add('copied');
+    
+    setTimeout(() => {
+      copyBtn.textContent = 'Copy';
+      copyBtn.classList.remove('copied');
+    }, 2000);
+  } catch (err) {
+    // Fallback for browsers that don't support clipboard API
+    linkInput.select();
+    document.execCommand('copy');
+    copyBtn.textContent = 'Copied!';
+    
+    setTimeout(() => {
+      copyBtn.textContent = 'Copy';
+    }, 2000);
+  }
+});
 
 // Socket event handlers
 socket.on('disconnect', () => {
