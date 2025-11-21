@@ -118,9 +118,12 @@ function createRoom() {
 
 function joinRoom(roomCode) {
   socket.emit('join-room', roomCode, (response) => {
+    console.log('join-room response:', JSON.stringify(response));
     if (response.success) {
       document.getElementById('listener-room-code').textContent = roomCode;
       console.log('Joined room:', roomCode, 'Host ID:', response.hostId);
+      console.log('Response object keys:', Object.keys(response));
+      console.log('Full response:', response);
       // Listener logic will handle connection
       initListener(response.hostId);
     } else {
