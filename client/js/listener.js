@@ -2,6 +2,7 @@
 let peerConnection = null;
 let hostId = null;
 const remoteAudio = document.getElementById('remote-audio');
+let iceCandidateQueue = [];
 
 // Volume control
 const volumeSlider = document.getElementById('volume-slider');
@@ -101,6 +102,19 @@ socket.on('offer', async (data) => {
     await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
     console.log('Remote description set successfully');
     
+    // Process any queued ICE candidates
+    if (iceCandidateQueue.length > 0) {
+      console.log(`Processing ${iceCandidateQueue.length} queued ICE candidates`);
+      for (const candidate of iceCandidateQueue) {
+        try {
+          await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        } catch (err) {
+          console.error('Error adding queued ICE candidate:', err);
+        }
+      }
+      iceCandidateQueue = [];
+    }
+    
     console.log('Creating answer...');
     const answer = await peerConnection.createAnswer();
     console.log('Setting local description...');
@@ -121,8 +135,16 @@ socket.on('offer', async (data) => {
 
 // Handle ICE candidates from host
 socket.on('ice-candidate', async (data) => {
-  console.log('Received ICE candidate from host');
+  console.log('Received ICE candidate from host, sender:', data.sender, 'expected:', hostId);
+  
   if (data.sender === hostId && peerConnection) {
+    // If remote description not set yet, queue the candidate
+    if (!peerConnection.remoteDescription) {
+      console.log('Queueing ICE candidate - remote description not set yet');
+      iceCandidateQueue.push(data.candidate);
+      return;
+    }
+    
     try {
       await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
       console.log('ICE candidate added successfully');
