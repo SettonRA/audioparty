@@ -11,6 +11,7 @@ let currentMode = null; // 'host' or 'listener'
 let pendingRoomCode = null;
 let currentRoomCode = null;
 let currentShareLink = null;
+let joinedViaUrl = false;
 
 // Check for room code in URL path on load
 window.addEventListener('DOMContentLoaded', () => {
@@ -23,19 +24,15 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // Validate it's a 6-character alphanumeric code
     if (/^[A-Z0-9]{6}$/.test(roomCode)) {
-      console.log('Valid room code detected, switching to listener mode');
+      console.log('Valid room code detected via URL, showing ready screen');
       pendingRoomCode = roomCode;
       currentMode = 'listener';
+      joinedViaUrl = true;
       showScreen('listener');
       
-      // Wait for socket to connect before joining
-      if (socket.connected) {
-        console.log('Socket already connected, joining immediately');
-        joinRoom(roomCode);
-        pendingRoomCode = null;
-      } else {
-        console.log('Socket not connected yet, waiting...');
-      }
+      // Show the ready panel instead of auto-connecting
+      document.getElementById('listener-ready').classList.remove('hidden');
+      document.getElementById('listener-connecting').classList.add('hidden');
     }
   }
 });
@@ -43,11 +40,8 @@ window.addEventListener('DOMContentLoaded', () => {
 // Handle socket connection
 socket.on('connect', () => {
   console.log('Connected to server');
-  // If we have a pending room code from URL, join now
-  if (pendingRoomCode) {
-    joinRoom(pendingRoomCode);
-    pendingRoomCode = null;
-  }
+  // If we have a pending room code from URL, we'll wait for user to click button
+  // Manual code entry will call joinRoom directly
 });
 
 // Landing screen controls
@@ -75,9 +69,24 @@ document.getElementById('join-submit-btn').addEventListener('click', () => {
   if (roomCode.length === 6) {
     currentMode = 'listener';
     showScreen('listener');
+    // Show connecting panel and hide ready panel
+    document.getElementById('listener-ready').classList.add('hidden');
+    document.getElementById('listener-connecting').classList.remove('hidden');
     joinRoom(roomCode);
   } else {
     alert('Please enter a valid 6-character room code');
+  }
+});
+
+// Start listening button (for URL-based joins)
+document.getElementById('start-listening-btn').addEventListener('click', () => {
+  if (pendingRoomCode) {
+    console.log('User clicked to start listening, joining room:', pendingRoomCode);
+    // Show connecting panel
+    document.getElementById('listener-ready').classList.add('hidden');
+    document.getElementById('listener-connecting').classList.remove('hidden');
+    joinRoom(pendingRoomCode);
+    pendingRoomCode = null;
   }
 });
 
