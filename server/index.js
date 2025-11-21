@@ -98,11 +98,13 @@ io.on('connection', (socket) => {
 
   // WebRTC Signaling: Forward ICE candidates
   socket.on('ice-candidate', (data) => {
-    console.log(`ICE candidate from ${socket.id} to ${data.target}`);
-    io.to(data.target).emit('ice-candidate', {
+    console.log(`ICE candidate from ${socket.id} to ${data.target}, candidate type: ${data.candidate?.type || 'unknown'}`);
+    const forwardData = {
       candidate: data.candidate,
       sender: socket.id
-    });
+    };
+    console.log('Forwarding ICE candidate with sender:', forwardData.sender);
+    io.to(data.target).emit('ice-candidate', forwardData);
   });
 
   // Handle disconnection

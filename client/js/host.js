@@ -109,8 +109,11 @@ async function createPeerConnection(listenerId) {
   peerConnections.set(listenerId, pc);
 
   // Add local audio stream to peer connection
-  localStream.getAudioTracks().forEach(track => {
-    pc.addTrack(track, localStream);
+  const audioTracks = localStream.getAudioTracks();
+  console.log(`Adding ${audioTracks.length} audio tracks to peer connection for:`, listenerId);
+  audioTracks.forEach(track => {
+    const sender = pc.addTrack(track, localStream);
+    console.log('Added track:', track.label, 'enabled:', track.enabled, 'readyState:', track.readyState);
   });
 
   // Handle ICE candidates
