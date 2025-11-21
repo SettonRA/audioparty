@@ -116,10 +116,13 @@ async function createPeerConnection(listenerId) {
   // Handle ICE candidates
   pc.onicecandidate = (event) => {
     if (event.candidate) {
+      console.log(`Sending ICE candidate to ${listenerId}:`, event.candidate.type);
       socket.emit('ice-candidate', {
         target: listenerId,
         candidate: event.candidate
       });
+    } else {
+      console.log('ICE gathering complete for:', listenerId);
     }
   };
 
@@ -134,7 +137,10 @@ async function createPeerConnection(listenerId) {
 
   // Create and send offer
   try {
-    const offer = await pc.createOffer();
+    const offer = await pc.createOffer({
+      offerToReceiveAudio: false,
+      offerToReceiveVideo: false
+    });
     await pc.setLocalDescription(offer);
     console.log('Local description set for:', listenerId);
     
@@ -153,11 +159,13 @@ async function createPeerConnection(listenerId) {
 
 // Handle answer from listener
 socket.on('answer', async (data) => {
+  console.log('Received answer from:', data.sender);
   const pc = peerConnections.get(data.sender);
   if (pc) {
     try {
+      console.log('Setting remote description for:', data.sender);
       await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
-      console.log('Answer received from:', data.sender);
+      console.log('Answer accepted from:', data.sender);
     } catch (error) {
       console.error('Error setting remote description:', error);
     }
@@ -166,6 +174,7 @@ socket.on('answer', async (data) => {
 
 // Handle ICE candidates from listener
 socket.on('ice-candidate', async (data) => {
+  console.log('Received ICE candidate from:', data.sender);
   const pc = peerConnections.get(data.sender);
   if (pc) {
     try {

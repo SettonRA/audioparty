@@ -47,10 +47,13 @@ function setupPeerConnection() {
   // Handle ICE candidates
   peerConnection.onicecandidate = (event) => {
     if (event.candidate) {
+      console.log('Sending ICE candidate to host:', event.candidate.type);
       socket.emit('ice-candidate', {
         target: hostId,
         candidate: event.candidate
       });
+    } else {
+      console.log('ICE gathering complete');
     }
   };
 
@@ -94,19 +97,22 @@ socket.on('offer', async (data) => {
   }
   
   try {
+    console.log('Setting remote description...');
     await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-    console.log('Remote description set');
+    console.log('Remote description set successfully');
     
+    console.log('Creating answer...');
     const answer = await peerConnection.createAnswer();
+    console.log('Setting local description...');
     await peerConnection.setLocalDescription(answer);
-    console.log('Local description set');
+    console.log('Local description set successfully');
     
     socket.emit('answer', {
       target: hostId,
       answer: answer
     });
     
-    console.log('Answer sent to host');
+    console.log('Answer sent to host:', hostId);
   } catch (error) {
     console.error('Error handling offer:', error);
     showError('Failed to establish connection: ' + error.message);
@@ -115,12 +121,16 @@ socket.on('offer', async (data) => {
 
 // Handle ICE candidates from host
 socket.on('ice-candidate', async (data) => {
+  console.log('Received ICE candidate from host');
   if (data.sender === hostId && peerConnection) {
     try {
       await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+      console.log('ICE candidate added successfully');
     } catch (error) {
       console.error('Error adding ICE candidate:', error);
     }
+  } else {
+    console.log('Ignoring ICE candidate - no peer connection or wrong sender');
   }
 });
 
