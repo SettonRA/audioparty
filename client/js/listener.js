@@ -30,20 +30,36 @@ function initListener(receivedHostId) {
 function setupPeerConnection() {
   peerConnection = new RTCPeerConnection(iceServers);
 
+  // Monitor ICE gathering state
+  peerConnection.onicegatheringstatechange = () => {
+    console.log('ICE gathering state:', peerConnection.iceGatheringState);
+  };
+
   // Handle incoming audio track
   peerConnection.ontrack = (event) => {
-    console.log('Received remote track:', event.track.kind);
+    console.log('Received remote track:', event.track.kind, 'readyState:', event.track.readyState);
     if (event.track.kind === 'audio') {
+      console.log('Setting audio srcObject, stream:', event.streams[0].id);
       remoteAudio.srcObject = event.streams[0];
       
-      // Update UI to show playing state
-      document.getElementById('listener-connecting').classList.add('hidden');
-      document.getElementById('listener-playing').classList.remove('hidden');
-      document.getElementById('connection-status').textContent = '🟢 Connected';
-      document.getElementById('connection-status').classList.add('connected');
-      
-      // Set initial volume
-      remoteAudio.volume = volumeSlider.value / 100;
+      // Ensure autoplay works
+      remoteAudio.play().then(() => {
+        console.log('Audio playing successfully');
+        
+        // Update UI to show playing state
+        document.getElementById('listener-connecting').classList.add('hidden');
+        document.getElementById('listener-playing').classList.remove('hidden');
+        document.getElementById('connection-status').textContent = '🟢 Connected';
+        document.getElementById('connection-status').classList.add('connected');
+        
+        // Set initial volume
+        remoteAudio.volume = volumeSlider.value / 100;
+      }).catch(err => {
+        console.error('Error playing audio:', err);
+        // Try to show playing state anyway
+        document.getElementById('listener-connecting').classList.add('hidden');
+        document.getElementById('listener-playing').classList.remove('hidden');
+      });
     }
   };
 
