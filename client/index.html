@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AudioParty - Stream Music Together</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎵 AudioParty</h1>
+            <p class="tagline">Stream music together in real-time</p>
+        </header>
+
+        <!-- Landing Screen -->
+        <div id="landing-screen" class="screen active">
+            <div class="button-group">
+                <button id="host-btn" class="primary-btn">Host a Party</button>
+                <button id="join-btn" class="secondary-btn">Join a Party</button>
+            </div>
+            
+            <div id="join-form" class="hidden">
+                <input type="text" id="room-code-input" placeholder="Enter room code (e.g., ABC123)" maxlength="6">
+                <button id="join-submit-btn" class="primary-btn">Join</button>
+                <button id="join-cancel-btn" class="text-btn">Cancel</button>
+            </div>
+
+            <div class="info-box">
+                <h3>How it works:</h3>
+                <ul>
+                    <li><strong>Hosts:</strong> Share a browser tab playing music (Spotify, YouTube, etc.)</li>
+                    <li><strong>Listeners:</strong> Join with a room code and listen in real-time</li>
+                    <li><strong>Private:</strong> Max 5 people per party, no data stored</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Host Screen -->
+        <div id="host-screen" class="screen">
+            <div class="status-bar">
+                <span class="room-code">Room Code: <strong id="host-room-code">------</strong></span>
+                <span class="participant-count">👥 <span id="host-participant-count">1</span>/5</span>
+            </div>
+
+            <div id="host-setup" class="setup-panel">
+                <h2>Start Your Party</h2>
+                <p class="instruction">Click below to share a browser tab with audio (Spotify, YouTube, etc.)</p>
+                <button id="start-streaming-btn" class="primary-btn large">Share Audio Tab</button>
+                <p class="hint">💡 Make sure to check "Share audio" in the browser dialog</p>
+            </div>
+
+            <div id="host-streaming" class="streaming-panel hidden">
+                <div class="status-indicator">
+                    <span class="pulse"></span>
+                    <span>Streaming Audio</span>
+                </div>
+                <p class="streaming-info">Share this code with friends: <strong class="share-code" id="share-code">------</strong></p>
+                
+                <div class="participants-list">
+                    <h3>Listeners</h3>
+                    <ul id="listeners-list">
+                        <li class="empty-state">Waiting for listeners to join...</li>
+                    </ul>
+                </div>
+
+                <button id="stop-streaming-btn" class="danger-btn">End Party</button>
+            </div>
+        </div>
+
+        <!-- Listener Screen -->
+        <div id="listener-screen" class="screen">
+            <div class="status-bar">
+                <span class="room-code">Room: <strong id="listener-room-code">------</strong></span>
+                <span class="connection-status" id="connection-status">Connecting...</span>
+            </div>
+
+            <div id="listener-connecting" class="setup-panel">
+                <div class="loader"></div>
+                <h2>Connecting to party...</h2>
+                <p>Please wait while we establish the audio stream</p>
+            </div>
+
+            <div id="listener-playing" class="streaming-panel hidden">
+                <div class="status-indicator">
+                    <span class="pulse"></span>
+                    <span>Receiving Audio</span>
+                </div>
+
+                <div class="audio-controls">
+                    <label for="volume-slider">Volume</label>
+                    <input type="range" id="volume-slider" min="0" max="100" value="80">
+                    <span id="volume-value">80%</span>
+                </div>
+
+                <div class="info-message">
+                    <p>🎧 Listening to the host's audio stream</p>
+                </div>
+
+                <button id="leave-party-btn" class="secondary-btn">Leave Party</button>
+            </div>
+
+            <div id="listener-error" class="error-panel hidden">
+                <h2>Connection Error</h2>
+                <p id="error-message">Unable to connect to the party</p>
+                <button id="back-to-home-btn" class="primary-btn">Back to Home</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden audio element for playback -->
+    <audio id="remote-audio" autoplay></audio>
+
+    <!-- Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/host.js"></script>
+    <script src="js/listener.js"></script>
+    <script src="js/webrtc.js"></script>
+</body>
+</html>
