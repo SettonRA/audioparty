@@ -70,7 +70,7 @@ io.on('connection', (socket) => {
       participantCount: room.participants.length
     });
 
-    console.log(`User ${socket.id} joined room ${roomId}`);
+    console.log(`User ${socket.id} joined room ${roomId}, host is ${room.hostId}`);
     callback({ 
       success: true, 
       hostId: room.hostId,

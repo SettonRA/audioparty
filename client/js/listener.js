@@ -21,7 +21,9 @@ document.getElementById('leave-party-btn').addEventListener('click', () => {
 });
 
 function initListener(receivedHostId) {
+  console.log('initListener called with hostId:', receivedHostId);
   hostId = receivedHostId;
+  console.log('hostId set to:', hostId);
   setupPeerConnection();
 }
 

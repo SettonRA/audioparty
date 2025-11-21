@@ -120,7 +120,7 @@ function joinRoom(roomCode) {
   socket.emit('join-room', roomCode, (response) => {
     if (response.success) {
       document.getElementById('listener-room-code').textContent = roomCode;
-      console.log('Joined room:', roomCode);
+      console.log('Joined room:', roomCode, 'Host ID:', response.hostId);
       // Listener logic will handle connection
       initListener(response.hostId);
     } else {
