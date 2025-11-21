@@ -43,25 +43,25 @@ io.on('connection', (socket) => {
   });
 
   // Join an existing room
-  socket.on('join-room', (roomId, callback) => {
+  socket.on('join-room', (roomId) => {
     console.log(`join-room request from ${socket.id} for room ${roomId}`);
     const room = roomManager.getRoom(roomId);
     
     if (!room) {
       console.log(`Room ${roomId} not found`);
-      callback({ success: false, error: 'Room not found' });
+      socket.emit('join-room-response', { success: false, error: 'Room not found' });
       return;
     }
 
     if (room.participants.length >= 5) {
       console.log(`Room ${roomId} is full`);
-      callback({ success: false, error: 'Room is full (max 5 participants)' });
+      socket.emit('join-room-response', { success: false, error: 'Room is full (max 5 participants)' });
       return;
     }
 
     if (room.participants.includes(socket.id)) {
       console.log(`User ${socket.id} already in room ${roomId}`);
-      callback({ success: false, error: 'Already in this room' });
+      socket.emit('join-room-response', { success: false, error: 'Already in this room' });
       return;
     }
 
@@ -75,12 +75,13 @@ io.on('connection', (socket) => {
     });
 
     const responseData = { 
-      success: true, 
+      success: true,
+      roomId: roomId,
       hostId: room.hostId,
       participantCount: room.participants.length 
     };
     console.log(`User ${socket.id} joined room ${roomId}, sending response:`, JSON.stringify(responseData));
-    callback(responseData);
+    socket.emit('join-room-response', responseData);
   });
 
   // WebRTC Signaling: Forward offer from host to listener
