@@ -1,5 +1,3 @@
-const { nanoid } = require('nanoid');
-
 class RoomManager {
   constructor() {
     this.rooms = new Map();
