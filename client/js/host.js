@@ -26,6 +26,16 @@ document.getElementById('stop-streaming-btn').addEventListener('click', () => {
   location.reload();
 });
 
+// Handle server disconnect
+socket.on('disconnect', () => {
+  if (localStream) {
+    console.log('Server disconnected while hosting');
+    stopStreaming();
+    alert('Lost connection to server. Your party has ended.');
+    setTimeout(() => location.reload(), 1000);
+  }
+});
+
 async function startAudioCapture() {
   try {
     // Request screen/tab sharing with audio

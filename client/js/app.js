@@ -182,8 +182,20 @@ document.getElementById('copy-link-btn').addEventListener('click', async () => {
 // Socket event handlers
 socket.on('disconnect', () => {
   console.log('Disconnected from server');
-  if (currentMode === 'listener') {
+  if (currentMode === 'host') {
+    alert('Lost connection to server. Your party has ended. Please refresh to start a new party.');
+  } else if (currentMode === 'listener') {
     showError('Lost connection to server');
+  }
+});
+
+// Handle reconnection
+socket.on('connect', () => {
+  console.log('Connected/Reconnected to server');
+  // If we have a pending room code from URL, join now
+  if (pendingRoomCode) {
+    joinRoom(pendingRoomCode);
+    pendingRoomCode = null;
   }
 });
 
