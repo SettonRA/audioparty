@@ -1,63 +1,108 @@
-# AudioParty
+# AudioParty 🎵
 
-WebRTC-based audio streaming party app for sharing music with friends in real-time.
+Stream music together in real-time. Share your browser tab's audio (Spotify, YouTube, SoundCloud, etc.) with up to 10 friends using WebRTC technology.
 
-## 🎵 Features
+## Features
 
-- Stream audio from Spotify, YouTube, SoundCloud, and other web services
-- Low-latency WebRTC peer-to-peer streaming
-- Support for up to 5 simultaneous participants (1 host + 4 listeners)
-- Simple room-based party system with 6-character codes
-- Individual volume control for listeners
-- Docker containerized deployment
+- **High-Quality Audio Streaming** - 48kHz stereo, 510kbps bitrate for near CD-quality
+- **Room-Based Parties** - Simple 6-character room codes for easy joining
+- **Low Latency** - Peer-to-peer WebRTC streaming for minimal delay
+- **Individual Volume Control** - Each listener controls their own volume
+- **Shareable Join Links** - Copy and share direct join URLs
+- **Privacy Focused** - No data stored, rooms expire when host leaves
+- **Up to 10 Participants** - 1 host + 9 listeners per party
 
-## 🚀 Quick Deploy
+## Browser Compatibility
 
-### Prerequisites
-- Ubuntu 24.04 LTS server
-- Docker & Docker Compose installed
-- 2GB RAM, 2 vCPU minimum
+| Browser | Host | Listen |
+|---------|------|--------|
+| Chrome | ✅ | ✅ |
+| Edge | ✅ | ✅ |
+| Brave | ✅ | ✅ |
+| Opera | ✅ | ✅ |
+| Firefox | ❌ | ❌ |
 
-### Deployment
+**Note:** Hosting requires a Chromium-based browser due to tab audio capture requirements. Firefox does not support the necessary `getDisplayMedia` audio features.
+
+## Quick Start
+
+### Docker Deployment
 
 ```bash
-# Clone repository
+# Clone the repository
 git clone https://github.com/SettonRA/audioparty.git
 cd audioparty
 
-# Deploy using script
-chmod +x deployment/deploy.sh
-./deployment/deploy.sh deploy
+# Build and run
+docker compose up -d
 
-# Access at http://your-server-ip:3000
+# Access at http://localhost:3000
 ```
 
-## 📖 Documentation
-
-- [Complete VM Setup Guide](deployment/VM-SETUP.md)
-- [Nginx Proxy Manager Config](deployment/NPM-CONFIG.md)
-- [Deployment Guide](deployment/README.md)
-
-## 🛠️ Management
+### Manual Setup
 
 ```bash
-# View logs
-./deployment/deploy.sh logs
+# Install dependencies
+npm install
 
-# Restart service
-./deployment/deploy.sh restart
+# Start the server
+npm start
 
-# Update
-./deployment/deploy.sh update
+# Access at http://localhost:3000
 ```
 
-## 🌐 Architecture
+## How It Works
 
-- **Backend:** Node.js, Express, Socket.io
+1. **Host** clicks "Host a Party" and shares their browser tab playing music
+2. **Listeners** join using the room code or direct link
+3. **Audio** streams peer-to-peer via WebRTC with minimal latency
+4. **Everyone** enjoys synchronized music together!
+
+## Technology Stack
+
+- **Backend:** Node.js 20, Express 4.18, Socket.io 4.6
 - **Frontend:** Vanilla JavaScript, HTML5, CSS3
-- **Real-time:** WebRTC for audio streaming
-- **Deployment:** Docker container
+- **Streaming:** WebRTC (STUN-based NAT traversal)
+- **Audio Quality:** Opus codec, 48kHz, stereo, 510kbps
+- **Deployment:** Docker with multi-stage Alpine builds
 
-## 📝 License
+## Troubleshooting
 
-MIT License - Feel free to use and modify
+### Connection Issues
+- **VPN/Firewall:** Disable VPN or configure firewall to allow WebRTC
+- **Corporate Networks:** May block peer-to-peer connections
+- **Network Type:** Works best across different networks (mobile hotspot + WiFi)
+
+### Audio Not Playing
+- Ensure "Share audio" is checked when selecting the tab
+- Check browser permissions for audio/microphone
+- Verify system volume and AudioParty volume slider
+
+### Browser Compatibility
+- Use Chrome, Edge, Brave, or Opera for hosting
+- Firefox cannot host due to browser limitations
+
+## Configuration
+
+Default port: `3000`
+
+To change the port, set the `PORT` environment variable:
+```bash
+PORT=8080 npm start
+```
+
+Or in Docker:
+```yaml
+environment:
+  - PORT=8080
+ports:
+  - "8080:8080"
+```
+
+## License
+
+MIT License - Free to use and modify
+
+## Contributing
+
+Contributions welcome! Please open an issue or pull request.
