@@ -79,9 +79,21 @@ document.getElementById('join-submit-btn').addEventListener('click', () => {
 });
 
 // Start listening button (for URL-based joins)
-document.getElementById('start-listening-btn').addEventListener('click', () => {
+document.getElementById('start-listening-btn').addEventListener('click', async () => {
   if (pendingRoomCode) {
     console.log('User clicked to start listening, joining room:', pendingRoomCode);
+    
+    // Unlock audio immediately with this user interaction
+    const audio = document.getElementById('remote-audio');
+    try {
+      await audio.play();
+      audio.pause();
+      audio.currentTime = 0;
+      console.log('Audio unlocked successfully');
+    } catch (err) {
+      console.log('Audio unlock attempt:', err.message);
+    }
+    
     // Show connecting panel
     document.getElementById('listener-ready').classList.add('hidden');
     document.getElementById('listener-connecting').classList.remove('hidden');
