@@ -30,6 +30,9 @@ window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('join-form').classList.remove('hidden');
       document.getElementById('host-btn').disabled = true;
       document.getElementById('join-btn').disabled = true;
+      
+      // Clean up the URL to remove the room code
+      window.history.replaceState({}, '', '/');
     }
   }
 });
