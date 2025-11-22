@@ -1,6 +1,6 @@
 # 🎵 AudioParty
 
-**Stream music together in real-time** - A WebRTC-based audio streaming party app that lets you share music from Spotify, YouTube, SoundCloud, and other web-based audio sources with up to 4 friends.
+**Stream music together in real-time** - A WebRTC-based audio streaming party app that lets you share music from Spotify, YouTube, SoundCloud, and other web-based audio sources.
 
 ## 🌟 Features
 
