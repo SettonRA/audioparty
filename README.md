@@ -53,7 +53,7 @@
 ### Prerequisites
 
 - Node.js 14+ and npm
-- Modern browser (Chrome 74+ or Firefox 74+)
+- Modern browser (Chrome or Edge)
 
 ### Installation
 
@@ -177,7 +177,7 @@ server {
 | Browser | Min Version | Tab Audio Sharing |
 |---------|-------------|-------------------|
 | Chrome  | 74+         | ✅ Full support    |
-| Firefox | 74+         | ✅ Full support    |
+| Firefox | Not tested  | ⚠️ Limited        |
 | Edge    | 79+         | ✅ Full support    |
 | Safari  | Not tested  | ⚠️ Limited        |
 
