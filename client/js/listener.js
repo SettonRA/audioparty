@@ -3,7 +3,6 @@ let peerConnection = null;
 let hostId = null;
 const remoteAudio = document.getElementById('remote-audio');
 let iceCandidateQueue = [];
-let audioUnlocked = false;
 
 // Volume control
 const volumeSlider = document.getElementById('volume-slider');
@@ -22,28 +21,10 @@ document.getElementById('leave-party-btn').addEventListener('click', () => {
   window.location.href = '/';
 });
 
-// Unlock audio playback with user interaction
-function unlockAudio() {
-  if (!audioUnlocked) {
-    console.log('Unlocking audio playback');
-    // Create a silent buffer to unlock audio context
-    remoteAudio.play().then(() => {
-      console.log('Audio unlocked successfully');
-      audioUnlocked = true;
-      remoteAudio.pause();
-      remoteAudio.currentTime = 0;
-    }).catch(err => {
-      console.log('Audio unlock attempt (expected to fail if no src):', err.message);
-      audioUnlocked = true; // Mark as attempted anyway
-    });
-  }
-}
-
 function initListener(receivedHostId) {
   console.log('initListener called with hostId:', receivedHostId);
   hostId = receivedHostId;
   console.log('hostId set to:', hostId);
-  unlockAudio(); // Unlock audio with this user interaction
   setupPeerConnection();
 }
 

@@ -11,7 +11,6 @@ let currentMode = null; // 'host' or 'listener'
 let pendingRoomCode = null;
 let currentRoomCode = null;
 let currentShareLink = null;
-let joinedViaUrl = false;
 
 // Check for room code in URL path on load
 window.addEventListener('DOMContentLoaded', () => {
@@ -24,15 +23,13 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // Validate it's a 6-character alphanumeric code
     if (/^[A-Z0-9]{6}$/.test(roomCode)) {
-      console.log('Valid room code detected via URL, showing ready screen');
-      pendingRoomCode = roomCode;
-      currentMode = 'listener';
-      joinedViaUrl = true;
-      showScreen('listener');
+      console.log('Valid room code detected via URL, auto-filling join form');
       
-      // Show the ready panel instead of auto-connecting
-      document.getElementById('listener-ready').classList.remove('hidden');
-      document.getElementById('listener-connecting').classList.add('hidden');
+      // Auto-fill the room code and show the join form
+      document.getElementById('room-code-input').value = roomCode;
+      document.getElementById('join-form').classList.remove('hidden');
+      document.getElementById('host-btn').disabled = true;
+      document.getElementById('join-btn').disabled = true;
     }
   }
 });
@@ -69,36 +66,9 @@ document.getElementById('join-submit-btn').addEventListener('click', () => {
   if (roomCode.length === 6) {
     currentMode = 'listener';
     showScreen('listener');
-    // Show connecting panel and hide ready panel
-    document.getElementById('listener-ready').classList.add('hidden');
-    document.getElementById('listener-connecting').classList.remove('hidden');
     joinRoom(roomCode);
   } else {
     alert('Please enter a valid 6-character room code');
-  }
-});
-
-// Start listening button (for URL-based joins)
-document.getElementById('start-listening-btn').addEventListener('click', async () => {
-  if (pendingRoomCode) {
-    console.log('User clicked to start listening, joining room:', pendingRoomCode);
-    
-    // Unlock audio immediately with this user interaction
-    const audio = document.getElementById('remote-audio');
-    try {
-      await audio.play();
-      audio.pause();
-      audio.currentTime = 0;
-      console.log('Audio unlocked successfully');
-    } catch (err) {
-      console.log('Audio unlock attempt:', err.message);
-    }
-    
-    // Show connecting panel
-    document.getElementById('listener-ready').classList.add('hidden');
-    document.getElementById('listener-connecting').classList.remove('hidden');
-    joinRoom(pendingRoomCode);
-    pendingRoomCode = null;
   }
 });
 
