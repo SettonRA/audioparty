@@ -53,9 +53,9 @@ io.on('connection', (socket) => {
       return;
     }
 
-    if (room.participants.length >= 5) {
+    if (room.participants.length >= 10) {
       console.log(`Room ${roomId} is full`);
-      socket.emit('join-room-response', { success: false, error: 'Room is full (max 5 participants)' });
+      socket.emit('join-room-response', { success: false, error: 'Room is full (max 10 participants)' });
       return;
     }
 
