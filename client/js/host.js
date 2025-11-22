@@ -45,7 +45,10 @@ async function startAudioCapture() {
       audio: {
         echoCancellation: false,
         noiseSuppression: false,
-        autoGainControl: false
+        autoGainControl: false,
+        sampleRate: 48000,
+        sampleSize: 16,
+        channelCount: 2
       }
     });
 
@@ -122,6 +125,16 @@ async function createPeerConnection(listenerId) {
   audioTracks.forEach(track => {
     const sender = pc.addTrack(track, localStream);
     console.log('Added track:', track.label, 'enabled:', track.enabled, 'readyState:', track.readyState);
+    
+    // Set encoding parameters for higher quality
+    const params = sender.getParameters();
+    if (!params.encodings) {
+      params.encodings = [{}];
+    }
+    params.encodings[0].maxBitrate = 510000; // 510 kbps for high quality audio
+    params.encodings[0].priority = 'high';
+    params.encodings[0].networkPriority = 'high';
+    sender.setParameters(params).catch(err => console.log('Failed to set encoding params:', err));
   });
 
   // Handle ICE candidates
@@ -145,6 +158,25 @@ async function createPeerConnection(listenerId) {
   pc.oniceconnectionstatechange = () => {
     console.log(`[${listenerId}] ICE connection state:`, pc.iceConnectionState);
   };
+
+  // Prefer Opus codec with high quality settings
+  const transceivers = pc.getTransceivers();
+  transceivers.forEach(transceiver => {
+    if (transceiver.sender && transceiver.sender.track && transceiver.sender.track.kind === 'audio') {
+      const capabilities = RTCRtpSender.getCapabilities('audio');
+      if (capabilities && capabilities.codecs) {
+        // Prefer Opus with maximum quality
+        const opusCodec = capabilities.codecs.find(codec => 
+          codec.mimeType === 'audio/opus' && codec.sdpFmtpLine && codec.sdpFmtpLine.includes('stereo=1')
+        ) || capabilities.codecs.find(codec => codec.mimeType === 'audio/opus');
+        
+        if (opusCodec) {
+          transceiver.setCodecPreferences([opusCodec]);
+          console.log('Set Opus codec preference with stereo');
+        }
+      }
+    }
+  });
 
   // Create and send offer
   try {
