@@ -7,10 +7,9 @@
 - **Tab Audio Sharing**: Share audio from any browser tab (Spotify, YouTube, etc.)
 - **Real-time Streaming**: Low-latency audio streaming using WebRTC (~200-500ms)
 - **Simple Room System**: Create or join parties with 6-character room codes
-- **Max 5 Participants**: 1 host + 4 listeners per party
 - **Volume Control**: Individual volume control for listeners
 - **No Data Storage**: Completely private, no recordings or data stored
-- **Modern Browser Support**: Works on latest Chrome and Firefox
+- **Modern Browser Support**: Works on latest Chrome and Edge
 
 ## 🏗️ Architecture
 
