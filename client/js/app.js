@@ -87,6 +87,16 @@ document.getElementById('back-to-home-btn').addEventListener('click', () => {
   location.reload();
 });
 
+// Troubleshooting panel toggle
+document.getElementById('troubleshooting-btn').addEventListener('click', () => {
+  const panel = document.getElementById('troubleshooting-panel');
+  panel.classList.toggle('hidden');
+});
+
+document.getElementById('close-troubleshooting-btn').addEventListener('click', () => {
+  document.getElementById('troubleshooting-panel').classList.add('hidden');
+});
+
 // Utility functions
 function showScreen(screenName) {
   Object.values(screens).forEach(screen => screen.classList.remove('active'));

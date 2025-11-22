@@ -35,6 +35,43 @@
                     <li><strong>Private:</strong> Max 5 people per party, no data stored</li>
                 </ul>
             </div>
+
+            <button id="troubleshooting-btn" class="text-btn help-btn">Trouble Connecting?</button>
+
+            <div id="troubleshooting-panel" class="info-box hidden">
+                <h3>🔧 Troubleshooting Tips</h3>
+                
+                <h4>Browser Requirements:</h4>
+                <ul>
+                    <li><strong>Use Chrome or Edge:</strong> Hosting requires a Chromium-based browser (Chrome, Edge, Brave, Opera)</li>
+                    <li><strong>Firefox limitation:</strong> Can listen but cannot host parties</li>
+                    <li><strong>Update your browser:</strong> Make sure you're using the latest version</li>
+                </ul>
+
+                <h4>Connection Issues:</h4>
+                <ul>
+                    <li><strong>Disable VPN:</strong> VPNs can block WebRTC connections needed for audio streaming</li>
+                    <li><strong>Corporate/School networks:</strong> May block peer-to-peer connections - try on personal network</li>
+                    <li><strong>Firewall/Antivirus:</strong> Temporarily disable to test if they're blocking connections</li>
+                    <li><strong>Use different network:</strong> Try mobile hotspot if on restricted network</li>
+                </ul>
+
+                <h4>Audio Not Playing:</h4>
+                <ul>
+                    <li><strong>Check volume:</strong> Make sure your system volume and AudioParty volume slider are up</li>
+                    <li><strong>Browser permissions:</strong> Ensure you allowed audio when prompted</li>
+                    <li><strong>Refresh and retry:</strong> Sometimes a page refresh can resolve connection issues</li>
+                </ul>
+
+                <h4>Chrome Tab Switching:</h4>
+                <ul>
+                    <li><strong>Expected behavior:</strong> Chrome automatically switches to the tab you're sharing</li>
+                    <li><strong>Solution:</strong> Just click back to the AudioParty tab after selecting your audio source</li>
+                    <li><strong>Tip:</strong> Pin the AudioParty tab or open it in a separate window for easier access</li>
+                </ul>
+
+                <button id="close-troubleshooting-btn" class="secondary-btn">Close</button>
+            </div>
         </div>
 
         <!-- Host Screen -->

@@ -184,6 +184,13 @@ input[type="text"]:focus {
   color: var(--primary-color);
 }
 
+.info-box h4 {
+  margin-top: 16px;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
 .info-box ul {
   list-style: none;
   margin-left: 0;
@@ -197,6 +204,27 @@ input[type="text"]:focus {
 
 .info-box strong {
   color: var(--text-primary);
+}
+
+/* Troubleshooting */
+.help-btn {
+  margin-top: 20px;
+  font-size: 0.9rem;
+  text-decoration: underline;
+}
+
+#troubleshooting-panel {
+  margin-top: 20px;
+  text-align: left;
+}
+
+#troubleshooting-panel h3 {
+  text-align: center;
+}
+
+#troubleshooting-panel .secondary-btn {
+  display: block;
+  margin: 20px auto 0;
 }
 
 /* Status Bar */
