@@ -31,8 +31,15 @@ class DiscordService {
           const channel = await this.client.channels.fetch(this.channelId);
           console.log(`Discord channel verified: ${channel.name} (${channel.type})`);
           this.isEnabled = true;
-          // Set initial idle status
-          this.client.user.setActivity('All Partied Out', { type: ActivityType.Custom });
+        // Set initial idle status
+        this.client.user.setPresence({
+          activities: [{
+            name: 'All Partied Out',
+            type: ActivityType.Custom,
+            state: '🎉'
+          }],
+          status: 'idle'
+        });
         } catch (error) {
           console.error(`Failed to access Discord channel ${this.channelId}:`, error.message);
           console.error('Make sure the bot has access to the channel and proper permissions.');
@@ -62,8 +69,14 @@ class DiscordService {
         ? songInfo.artists.join(', ')
         : songInfo.artist || songInfo.artists || 'Unknown Artist';
       
-      // Update bot status
-      this.client.user.setActivity(`${songInfo.title}`, { type: ActivityType.Listening });
+      // Update bot status with "Listening to" prefix
+      this.client.user.setPresence({
+        activities: [{
+          name: songInfo.title,
+          type: ActivityType.Listening
+        }],
+        status: 'online'
+      });
       
       const embed = new EmbedBuilder()
         .setColor(0x1DB954) // Spotify green
@@ -129,7 +142,14 @@ class DiscordService {
       this.currentMessageId = null;
       
       // Reset bot status to idle
-      this.client.user.setActivity('All Partied Out', { type: ActivityType.Custom });
+      this.client.user.setPresence({
+        activities: [{
+          name: 'All Partied Out',
+          type: ActivityType.Custom,
+          state: '🎉'
+        }],
+        status: 'idle'
+      });
     } catch (error) {
       console.error('Error updating party ended message:', error);
     }
