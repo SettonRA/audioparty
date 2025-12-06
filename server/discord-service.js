@@ -23,11 +23,21 @@ class DiscordService {
         intents: [GatewayIntentBits.Guilds]
       });
 
-      this.client.once('ready', () => {
+      this.client.once('ready', async () => {
         console.log(`Discord bot logged in as ${this.client.user.tag}`);
-        this.isEnabled = true;
-        // Set initial idle status
-        this.client.user.setActivity('All Partied Out', { type: ActivityType.Custom });
+        
+        // Verify channel access
+        try {
+          const channel = await this.client.channels.fetch(this.channelId);
+          console.log(`Discord channel verified: ${channel.name} (${channel.type})`);
+          this.isEnabled = true;
+          // Set initial idle status
+          this.client.user.setActivity('All Partied Out', { type: ActivityType.Custom });
+        } catch (error) {
+          console.error(`Failed to access Discord channel ${this.channelId}:`, error.message);
+          console.error('Make sure the bot has access to the channel and proper permissions.');
+          this.isEnabled = false;
+        }
       });
 
       this.client.on('error', (error) => {
