@@ -4,6 +4,13 @@ let audioContext = null;
 let analyserNode = null;
 let isDetectionActive = false;
 let lastDetectedSong = null;
+let audioMonitorInterval = null;
+let wasSilent = false;
+let silenceStartTime = null;
+let lastDetectionTime = 0;
+const SILENCE_THRESHOLD = 0.01; // Audio level threshold for silence
+const MIN_SILENCE_DURATION = 2000; // 2 seconds of silence before triggering
+const MIN_DETECTION_INTERVAL = 15000; // Minimum 15 seconds between detections
 
 // Initialize song detection when streaming starts
 function initializeSongDetection(stream) {
@@ -19,15 +26,15 @@ function initializeSongDetection(stream) {
 
     console.log('Song detection initialized');
     
-    // Start automatic detection every 30 seconds
-    startAutomaticDetection();
+    // Start smart detection with silence monitoring
+    startSmartDetection();
   } catch (error) {
     console.error('Failed to initialize song detection:', error);
   }
 }
 
-// Start automatic song detection
-function startAutomaticDetection() {
+// Start smart detection with silence monitoring
+function startSmartDetection() {
   if (isDetectionActive) return;
   
   isDetectionActive = true;
@@ -35,12 +42,67 @@ function startAutomaticDetection() {
   // Detect immediately
   setTimeout(() => detectCurrentSong(), 5000); // Wait 5 seconds for audio to stabilize
   
-  // Then detect every 30 seconds
-  songDetectionInterval = setInterval(() => {
-    detectCurrentSong();
-  }, 30000);
+  // Start monitoring audio levels for silence detection
+  startAudioMonitoring();
   
-  console.log('Automatic song detection started');
+  // Fallback: Also check every 60 seconds in case silence detection misses something
+  songDetectionInterval = setInterval(() => {
+    const timeSinceLastDetection = Date.now() - lastDetectionTime;
+    // Only auto-detect if it's been more than 45 seconds since last detection
+    if (timeSinceLastDetection > 45000) {
+      console.log('Fallback detection triggered (60s interval)');
+      detectCurrentSong();
+    }
+  }, 60000);
+  
+  console.log('Smart song detection started (silence detection + 60s fallback)');
+}
+
+// Monitor audio levels to detect silence (song changes)
+function startAudioMonitoring() {
+  if (audioMonitorInterval) return;
+  
+  const bufferLength = analyserNode.frequencyBinCount;
+  const dataArray = new Uint8Array(bufferLength);
+  
+  audioMonitorInterval = setInterval(() => {
+    if (!analyserNode) return;
+    
+    // Get current audio level
+    analyserNode.getByteTimeDomainData(dataArray);
+    
+    // Calculate RMS (root mean square) for audio level
+    let sum = 0;
+    for (let i = 0; i < bufferLength; i++) {
+      const normalized = (dataArray[i] - 128) / 128;
+      sum += normalized * normalized;
+    }
+    const rms = Math.sqrt(sum / bufferLength);
+    
+    const isSilent = rms < SILENCE_THRESHOLD;
+    const now = Date.now();
+    
+    if (isSilent && !wasSilent) {
+      // Silence just started
+      silenceStartTime = now;
+      wasSilent = true;
+    } else if (!isSilent && wasSilent) {
+      // Audio resumed after silence
+      const silenceDuration = now - silenceStartTime;
+      const timeSinceLastDetection = now - lastDetectionTime;
+      
+      if (silenceDuration >= MIN_SILENCE_DURATION && timeSinceLastDetection >= MIN_DETECTION_INTERVAL) {
+        console.log(`Silence detected (${(silenceDuration/1000).toFixed(1)}s) - triggering song detection`);
+        // Wait 3 seconds for new song to start before detecting
+        setTimeout(() => detectCurrentSong(), 3000);
+      }
+      
+      wasSilent = false;
+      silenceStartTime = null;
+    }
+  }, 500); // Check every 500ms
+  
+  console.log('Audio level monitoring started');
 }
 
 // Stop automatic detection
@@ -52,6 +114,11 @@ function stopSongDetection() {
     songDetectionInterval = null;
   }
   
+  if (audioMonitorInterval) {
+    clearInterval(audioMonitorInterval);
+    audioMonitorInterval = null;
+  }
+  
   if (audioContext && audioContext.state !== 'closed') {
     audioContext.close();
     audioContext = null;
@@ -59,6 +126,8 @@ function stopSongDetection() {
   
   analyserNode = null;
   lastDetectedSong = null;
+  wasSilent = false;
+  silenceStartTime = null;
   
   console.log('Song detection stopped');
 }
@@ -98,6 +167,7 @@ async function detectCurrentSong() {
     
     if (result.success && result.song) {
       lastDetectedSong = result.song;
+      lastDetectionTime = Date.now(); // Track when detection occurred
       updateSongDisplay({ status: 'success', song: result.song });
       
       // Broadcast to all listeners in the room
