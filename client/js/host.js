@@ -25,7 +25,8 @@ const iceServers = {
       credential: 'openrelayproject'
     }
   ],
-  iceCandidatePoolSize: 10
+  iceCandidatePoolSize: 10,
+  iceTransportPolicy: 'relay' // Force TURN relay for testing
 };
 
 // Start streaming button

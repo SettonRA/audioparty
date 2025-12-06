@@ -23,7 +23,8 @@ const iceServers = {
       credential: 'openrelayproject'
     }
   ],
-  iceCandidatePoolSize: 10
+  iceCandidatePoolSize: 10,
+  iceTransportPolicy: 'relay' // Force TURN relay for testing
 };
 
 // Log WebRTC stats for debugging (optional)
