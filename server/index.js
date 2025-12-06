@@ -1,11 +1,9 @@
 require('dotenv').config();
-require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
 const path = require('path');
 const RoomManager = require('./rooms');
-const ACRCloudService = require('./acrcloud-service');
 const ACRCloudService = require('./acrcloud-service');
 
 const app = express();
