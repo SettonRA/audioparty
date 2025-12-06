@@ -10,15 +10,19 @@ let gainNode = null;
 const volumeSlider = document.getElementById('volume-slider');
 const volumeValue = document.getElementById('volume-value');
 
-volumeSlider.addEventListener('input', (e) => {
-  const volume = e.target.value;
-  volumeValue.textContent = volume + '%';
-  
-  // Use Web Audio API for volume control to support >100%
-  if (gainNode) {
-    gainNode.gain.setValueAtTime(volume / 100, audioContext.currentTime);
-  }
-});
+if (volumeSlider) {
+  volumeSlider.addEventListener('input', (e) => {
+    const volume = e.target.value;
+    if (volumeValue) {
+      volumeValue.textContent = volume + '%';
+    }
+    
+    // Use Web Audio API for volume control to support >100%
+    if (gainNode && audioContext) {
+      gainNode.gain.setValueAtTime(volume / 100, audioContext.currentTime);
+    }
+  });
+}
 
 // Leave party button
 document.getElementById('leave-party-btn').addEventListener('click', () => {
@@ -52,7 +56,10 @@ function setupPeerConnection() {
       audioContext = new AudioContext();
       const source = audioContext.createMediaStreamSource(event.streams[0]);
       gainNode = audioContext.createGain();
-      gainNode.gain.setValueAtTime(volumeSlider.value / 100, audioContext.currentTime);
+      
+      // Set initial volume from slider (default to 0.8 if slider not found)
+      const initialVolume = volumeSlider ? (volumeSlider.value / 100) : 0.8;
+      gainNode.gain.setValueAtTime(initialVolume, audioContext.currentTime);
       
       source.connect(gainNode);
       gainNode.connect(audioContext.destination);
