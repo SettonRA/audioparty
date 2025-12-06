@@ -1,5 +1,5 @@
 // Discord integration service
-const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { Client, GatewayIntentBits, ActivityType, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 
 class DiscordService {
   constructor() {
@@ -26,6 +26,8 @@ class DiscordService {
       this.client.once('ready', () => {
         console.log(`Discord bot logged in as ${this.client.user.tag}`);
         this.isEnabled = true;
+        // Set initial idle status
+        this.client.user.setActivity('All Partied Out', { type: ActivityType.Custom });
       });
 
       this.client.on('error', (error) => {
@@ -49,6 +51,9 @@ class DiscordService {
       const artistText = Array.isArray(songInfo.artists) 
         ? songInfo.artists.join(', ')
         : songInfo.artist || songInfo.artists || 'Unknown Artist';
+      
+      // Update bot status
+      this.client.user.setActivity(`${songInfo.title}`, { type: ActivityType.Listening });
       
       const embed = new EmbedBuilder()
         .setColor(0x1DB954) // Spotify green
@@ -112,6 +117,9 @@ class DiscordService {
 
       await message.edit({ embeds: [embed], components: [] });
       this.currentMessageId = null;
+      
+      // Reset bot status to idle
+      this.client.user.setActivity('All Partied Out', { type: ActivityType.Custom });
     } catch (error) {
       console.error('Error updating party ended message:', error);
     }
