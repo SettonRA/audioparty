@@ -35,6 +35,22 @@ function setupPeerConnection() {
   peerConnection.onicegatheringstatechange = () => {
     console.log('ICE gathering state:', peerConnection.iceGatheringState);
   };
+  
+  // Monitor ICE connection state
+  peerConnection.oniceconnectionstatechange = () => {
+    console.log('ICE connection state:', peerConnection.iceConnectionState);
+    if (peerConnection.iceConnectionState === 'failed') {
+      console.error('ICE connection failed!');
+      // Log the local and remote descriptions for debugging
+      console.log('Local description:', peerConnection.localDescription);
+      console.log('Remote description:', peerConnection.remoteDescription);
+    }
+  };
+  
+  // Monitor overall connection state
+  peerConnection.onconnectionstatechange = () => {
+    console.log('Connection state:', peerConnection.connectionState);
+  };
 
   // Handle incoming audio track
   peerConnection.ontrack = (event) => {
@@ -67,7 +83,14 @@ function setupPeerConnection() {
   // Handle ICE candidates
   peerConnection.onicecandidate = (event) => {
     if (event.candidate) {
-      console.log('Sending ICE candidate to host:', event.candidate.type, 'protocol:', event.candidate.protocol, 'address:', event.candidate.address);
+      console.log('Sending ICE candidate to host:', {
+        type: event.candidate.type,
+        protocol: event.candidate.protocol,
+        address: event.candidate.address,
+        port: event.candidate.port,
+        priority: event.candidate.priority,
+        candidate: event.candidate.candidate
+      });
       socket.emit('ice-candidate', {
         target: hostId,
         candidate: event.candidate

@@ -173,6 +173,19 @@ socket.on('listener-left', (data) => {
 async function createPeerConnection(listenerId) {
   const pc = new RTCPeerConnection(iceServers);
   peerConnections.set(listenerId, pc);
+  
+  // Log ICE connection state changes
+  pc.oniceconnectionstatechange = () => {
+    console.log(`[${listenerId}] ICE connection state:`, pc.iceConnectionState);
+    if (pc.iceConnectionState === 'failed') {
+      console.error(`[${listenerId}] ICE connection failed!`);
+    }
+  };
+  
+  // Log connection state changes
+  pc.onconnectionstatechange = () => {
+    console.log(`[${listenerId}] Connection state:`, pc.connectionState);
+  };
 
   // Add processed audio stream to peer connection (or fall back to local stream)
   const streamToSend = processedStream || localStream;
@@ -196,7 +209,13 @@ async function createPeerConnection(listenerId) {
   // Handle ICE candidates
   pc.onicecandidate = (event) => {
     if (event.candidate) {
-      console.log(`Sending ICE candidate to ${listenerId}:`, event.candidate.type, 'protocol:', event.candidate.protocol, 'address:', event.candidate.address);
+      console.log(`Sending ICE candidate to ${listenerId}:`, {
+        type: event.candidate.type,
+        protocol: event.candidate.protocol,
+        address: event.candidate.address,
+        port: event.candidate.port,
+        priority: event.candidate.priority
+      });
       socket.emit('ice-candidate', {
         target: listenerId,
         candidate: event.candidate
