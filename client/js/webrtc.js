@@ -5,9 +5,9 @@
 const iceServers = {
   iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
-    // Local TURN server for same-network connections
+    // Your TURN server (accessible locally and externally)
     {
-      urls: 'turn:192.168.1.111:3478',
+      urls: 'turn:turn.cineclark.studio:3478',
       username: 'audioparty',
       credential: 'AudioParty2025!'
     },
