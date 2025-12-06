@@ -6,14 +6,15 @@ const iceServers = {
   iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
-    { urls: 'stun:stun2.l.google.com:19302' },
-    { urls: 'stun:stun3.l.google.com:19302' },
-    { urls: 'stun:stun4.l.google.com:19302' },
     // TURN servers for NAT traversal when STUN isn't sufficient
     { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
+    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+    // Additional TURN servers for redundancy
+    { urls: 'turn:relay1.expressturn.com:3478', username: 'efMVBHB9KLXJO7ZZVN', credential: 'lZq2Hv1v4wgLqVPS' }
   ],
-  iceCandidatePoolSize: 10
+  iceCandidatePoolSize: 10,
+  iceTransportPolicy: 'all' // Try all connection types including relay
 };
 
 // Log WebRTC stats for debugging (optional)

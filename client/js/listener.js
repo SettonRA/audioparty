@@ -67,7 +67,7 @@ function setupPeerConnection() {
   // Handle ICE candidates
   peerConnection.onicecandidate = (event) => {
     if (event.candidate) {
-      console.log('Sending ICE candidate to host:', event.candidate.type);
+      console.log('Sending ICE candidate to host:', event.candidate.type, 'protocol:', event.candidate.protocol, 'address:', event.candidate.address);
       socket.emit('ice-candidate', {
         target: hostId,
         candidate: event.candidate
