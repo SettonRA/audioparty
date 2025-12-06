@@ -3,7 +3,7 @@ let peerConnection = null;
 let hostId = null;
 const remoteAudio = document.getElementById('remote-audio');
 let iceCandidateQueue = [];
-let audioContext = null;
+let listenerAudioContext = null;
 let gainNode = null;
 
 // Volume control
@@ -18,8 +18,8 @@ if (volumeSlider) {
     }
     
     // Use Web Audio API for volume control to support >100%
-    if (gainNode && audioContext) {
-      gainNode.gain.setValueAtTime(volume / 100, audioContext.currentTime);
+    if (gainNode && listenerAudioContext) {
+      gainNode.gain.setValueAtTime(volume / 100, listenerAudioContext.currentTime);
     }
   });
 }
@@ -53,13 +53,13 @@ function setupPeerConnection() {
       console.log('Setting audio srcObject, stream:', event.streams[0].id);
       
       // Set up Web Audio API for volume control >100%
-      audioContext = new AudioContext();
-      const source = audioContext.createMediaStreamSource(event.streams[0]);
-      gainNode = audioContext.createGain();
+      listenerAudioContext = new AudioContext();
+      const source = listenerAudioContext.createMediaStreamSource(event.streams[0]);
+      gainNode = listenerAudioContext.createGain();
       
       // Set initial volume from slider (default to 0.8 if slider not found)
       const initialVolume = volumeSlider ? (volumeSlider.value / 100) : 0.8;
-      gainNode.gain.setValueAtTime(initialVolume, audioContext.currentTime);
+      gainNode.gain.setValueAtTime(initialVolume, listenerAudioContext.currentTime);
       
       source.connect(gainNode);
       gainNode.connect(audioContext.destination);
