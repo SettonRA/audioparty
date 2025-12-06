@@ -1,34 +1,17 @@
 // WebRTC utility functions and shared configuration
 // This file contains shared WebRTC configuration and helper functions
 
-// ICE servers configuration (STUN servers for NAT traversal, TURN servers for relay)
+// ICE servers configuration - using dedicated TURN server on Docker01
 const iceServers = {
   iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    // TURN servers - using multiple providers for redundancy
     {
-      urls: [
-        'turn:openrelay.metered.ca:80',
-        'turn:openrelay.metered.ca:443',
-        'turn:openrelay.metered.ca:443?transport=tcp'
-      ],
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
-    },
-    {
-      urls: 'turn:numb.viagenie.ca',
-      username: 'webrtc@live.com',
-      credential: 'muazkh'
-    },
-    {
-      urls: 'turn:relay1.expressturn.com:3478',
-      username: 'efMVBHB9KLXJO7ZZVN',
-      credential: 'lZq2Hv1v4wgLqVPS'
+      urls: 'turn:192.168.1.111:3478',
+      username: 'audioparty',
+      credential: 'AudioParty2025!'
     }
   ],
-  iceCandidatePoolSize: 10,
-  iceTransportPolicy: 'all' // Try all connection types including relay
+  iceCandidatePoolSize: 10
 };
 
 // Log WebRTC stats for debugging (optional)

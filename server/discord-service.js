@@ -145,7 +145,7 @@ class DiscordService {
         activities: [{
           name: 'Custom Status',
           type: ActivityType.Custom,
-          state: 'All Partied Out 🎉'
+          state: 'All Partied Out!'
         }],
         status: 'idle'
       });
