@@ -6,8 +6,8 @@ class ACRCloudService {
       host: process.env.ACRCLOUD_HOST || 'identify-us-west-2.acrcloud.com',
       access_key: process.env.ACRCLOUD_ACCESS_KEY,
       access_secret: process.env.ACRCLOUD_ACCESS_SECRET,
-      data_type: 'audio',
-      audio_format: 'wav'
+      data_type: 'audio'
+      // audio_format not specified - ACRCloud will auto-detect
     });
   }
 

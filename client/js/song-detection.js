@@ -115,107 +115,81 @@ async function detectCurrentSong() {
   }
 }
 
-// Capture audio sample from stream
+// Capture audio sample from stream using MediaRecorder
 function captureAudioSample(durationSeconds) {
-  return new Promise((resolve) => {
-    if (!audioContext || !localStream) {
+  return new Promise((resolve, reject) => {
+    if (!localStream) {
+      console.error('No localStream available');
       resolve(null);
       return;
     }
 
     try {
-      const sampleRate = 16000; // ACRCloud prefers 16kHz
-      const numChannels = 1; // Mono
-      const bufferSize = sampleRate * durationSeconds;
-      
-      const offlineContext = new OfflineAudioContext(numChannels, bufferSize, sampleRate);
-      const source = offlineContext.createMediaStreamSource(localStream);
-      source.connect(offlineContext.destination);
-
-      // Start recording
-      offlineContext.startRendering().then(buffer => {
-        // Convert AudioBuffer to WAV format
-        const wavData = audioBufferToWav(buffer);
-        const base64Data = arrayBufferToBase64(wavData);
-        resolve(base64Data);
-      }).catch(error => {
-        console.error('Error rendering audio:', error);
+      // Use MediaRecorder to capture audio
+      const audioTrack = localStream.getAudioTracks()[0];
+      if (!audioTrack) {
+        console.error('No audio track found');
         resolve(null);
+        return;
+      }
+
+      // Create a new stream with just the audio track
+      const audioStream = new MediaStream([audioTrack]);
+      
+      const chunks = [];
+      const mediaRecorder = new MediaRecorder(audioStream, {
+        mimeType: 'audio/webm;codecs=opus'
       });
 
-      // Timeout after duration + 2 seconds
-      setTimeout(() => {
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        try {
+          const blob = new Blob(chunks, { type: 'audio/webm' });
+          
+          // Convert blob to base64
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64data = reader.result.split(',')[1];
+            resolve(base64data);
+          };
+          reader.onerror = () => {
+            console.error('FileReader error');
+            resolve(null);
+          };
+          reader.readAsDataURL(blob);
+        } catch (error) {
+          console.error('Error processing recorded audio:', error);
+          resolve(null);
+        }
+      };
+
+      mediaRecorder.onerror = (error) => {
+        console.error('MediaRecorder error:', error);
         resolve(null);
-      }, (durationSeconds + 2) * 1000);
+      };
+
+      // Start recording
+      mediaRecorder.start();
+      console.log('Started audio capture for', durationSeconds, 'seconds');
+
+      // Stop after specified duration
+      setTimeout(() => {
+        if (mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+          console.log('Stopped audio capture');
+        }
+      }, durationSeconds * 1000);
+
     } catch (error) {
       console.error('Error capturing audio sample:', error);
       resolve(null);
     }
   });
-}
-
-// Convert AudioBuffer to WAV format
-function audioBufferToWav(buffer) {
-  const numChannels = buffer.numberOfChannels;
-  const sampleRate = buffer.sampleRate;
-  const format = 1; // PCM
-  const bitDepth = 16;
-  
-  const bytesPerSample = bitDepth / 8;
-  const blockAlign = numChannels * bytesPerSample;
-  
-  const data = [];
-  for (let i = 0; i < buffer.numberOfChannels; i++) {
-    data.push(buffer.getChannelData(i));
-  }
-  
-  const length = buffer.length * numChannels * bytesPerSample;
-  const wav = new ArrayBuffer(44 + length);
-  const view = new DataView(wav);
-  
-  // Write WAV header
-  writeString(view, 0, 'RIFF');
-  view.setUint32(4, 36 + length, true);
-  writeString(view, 8, 'WAVE');
-  writeString(view, 12, 'fmt ');
-  view.setUint32(16, 16, true); // fmt chunk size
-  view.setUint16(20, format, true);
-  view.setUint16(22, numChannels, true);
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, sampleRate * blockAlign, true);
-  view.setUint16(32, blockAlign, true);
-  view.setUint16(34, bitDepth, true);
-  writeString(view, 36, 'data');
-  view.setUint32(40, length, true);
-  
-  // Write audio data
-  let offset = 44;
-  for (let i = 0; i < buffer.length; i++) {
-    for (let channel = 0; channel < numChannels; channel++) {
-      const sample = Math.max(-1, Math.min(1, data[channel][i]));
-      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
-      offset += 2;
-    }
-  }
-  
-  return wav;
-}
-
-// Helper function to write string to DataView
-function writeString(view, offset, string) {
-  for (let i = 0; i < string.length; i++) {
-    view.setUint8(offset + i, string.charCodeAt(i));
-  }
-}
-
-// Convert ArrayBuffer to Base64
-function arrayBufferToBase64(buffer) {
-  const bytes = new Uint8Array(buffer);
-  let binary = '';
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
 }
 
 // Update song display UI
