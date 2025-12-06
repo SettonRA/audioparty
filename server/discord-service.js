@@ -71,7 +71,7 @@ class DiscordService {
           new ButtonBuilder()
             .setLabel('Join Party')
             .setStyle(ButtonStyle.Link)
-            .setURL(`${this.baseUrl}?room=${roomCode}`)
+            .setURL(`${this.baseUrl}/${roomCode}`)
             .setEmoji('🎧')
         );
 
