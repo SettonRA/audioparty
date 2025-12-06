@@ -14,6 +14,12 @@
   - Automatically boosts quiet audio sources
   - Prevents volume spikes with intelligent compression
   - Ensures all listeners hear clear, balanced audio
+- **Discord Integration**: Optional bot integration for sharing now playing info
+  - Posts real-time song updates to Discord channel
+  - Displays album art, artist, and listener count
+  - Includes "Join Party" button with direct room link
+  - Automatically updates when songs change (no spam)
+  - Shows "Party Ended" message when host disconnects
 - **Simple Room System**: Create or join parties with 6-character room codes
 - **Individual Volume Control**: Personal volume slider for each listener (0-100%)
 - **No Data Storage**: Completely private, no recordings or data stored
@@ -57,6 +63,7 @@
 - **WebRTC**: Native browser APIs for peer-to-peer audio streaming
 - **Web Audio API**: Real-time audio processing, compression, and analysis
 - **ACRCloud API**: Audio fingerprinting for song recognition
+- **Discord.js**: Bot integration for Discord channel updates
 - **Signaling**: Socket.io for peer coordination and song metadata broadcast
 
 ## 🚀 Quick Start
@@ -81,13 +88,17 @@
 3. **Configure environment variables**:
    ```bash
    cp .env.example .env
-   # Edit .env and add your ACRCloud credentials for song detection
+   # Edit .env and add your credentials
    ```
    
-   To get ACRCloud credentials:
+   **Required for song detection:**
    - Sign up at [ACRCloud Console](https://console.acrcloud.com/)
    - Create a new project with "Audio & Video Recognition" type
    - Copy your Host, Access Key, and Access Secret to `.env`
+   
+   **Optional for Discord integration:**
+   - See [DISCORD-SETUP.md](DISCORD-SETUP.md) for detailed instructions
+   - Add your Discord bot token, channel ID, and AudioParty URL to `.env`
 
 4. **Start the server**:
    ```bash
