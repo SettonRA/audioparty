@@ -3,7 +3,13 @@ let localStream = null;
 let processedStream = null; // Stream with audio processing applied
 const peerConnections = new Map(); // Map of listenerId -> RTCPeerConnection
 
-// Note: iceServers is defined in webrtc.js
+// ICE servers configuration (using public STUN servers)
+const iceServers = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' }
+  ]
+};
 
 // Start streaming button
 document.getElementById('start-streaming-btn').addEventListener('click', async () => {

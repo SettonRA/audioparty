@@ -3,26 +3,16 @@ let peerConnection = null;
 let hostId = null;
 const remoteAudio = document.getElementById('remote-audio');
 let iceCandidateQueue = [];
-let listenerAudioContext = null;
-let gainNode = null;
 
 // Volume control
 const volumeSlider = document.getElementById('volume-slider');
 const volumeValue = document.getElementById('volume-value');
 
-if (volumeSlider) {
-  volumeSlider.addEventListener('input', (e) => {
-    const volume = e.target.value;
-    if (volumeValue) {
-      volumeValue.textContent = volume + '%';
-    }
-    
-    // Use Web Audio API for volume control to support >100%
-    if (gainNode && listenerAudioContext) {
-      gainNode.gain.setValueAtTime(volume / 100, listenerAudioContext.currentTime);
-    }
-  });
-}
+volumeSlider.addEventListener('input', (e) => {
+  const volume = e.target.value;
+  remoteAudio.volume = volume / 100;
+  volumeValue.textContent = volume + '%';
+});
 
 // Leave party button
 document.getElementById('leave-party-btn').addEventListener('click', () => {
@@ -51,32 +41,20 @@ function setupPeerConnection() {
     console.log('Received remote track:', event.track.kind, 'readyState:', event.track.readyState);
     if (event.track.kind === 'audio') {
       console.log('Setting audio srcObject, stream:', event.streams[0].id);
-      
-      // Set up Web Audio API for volume control >100%
-      listenerAudioContext = new AudioContext();
-      const source = listenerAudioContext.createMediaStreamSource(event.streams[0]);
-      gainNode = listenerAudioContext.createGain();
-      
-      // Set initial volume from slider (default to 0.8 if slider not found)
-      const initialVolume = volumeSlider ? (volumeSlider.value / 100) : 0.8;
-      gainNode.gain.setValueAtTime(initialVolume, listenerAudioContext.currentTime);
-      
-      source.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      // Set srcObject for potential browser controls (muted by default, Web Audio handles playback)
       remoteAudio.srcObject = event.streams[0];
-      remoteAudio.volume = 0; // Mute the HTML5 audio element
       
       // Ensure autoplay works
       remoteAudio.play().then(() => {
-        console.log('Audio playing successfully with Web Audio API volume control');
+        console.log('Audio playing successfully');
         
         // Update UI to show playing state
         document.getElementById('listener-connecting').classList.add('hidden');
         document.getElementById('listener-playing').classList.remove('hidden');
         document.getElementById('connection-status').textContent = '🟢 Connected';
         document.getElementById('connection-status').classList.add('connected');
+        
+        // Set initial volume
+        remoteAudio.volume = volumeSlider.value / 100;
       }).catch(err => {
         console.error('Error playing audio:', err);
         // Try to show playing state anyway
