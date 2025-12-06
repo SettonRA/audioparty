@@ -5,6 +5,7 @@ const socketIO = require('socket.io');
 const path = require('path');
 const RoomManager = require('./rooms');
 const ACRCloudService = require('./acrcloud-service');
+const discordService = require('./discord-service');
 
 const app = express();
 const server = http.createServer(app);
@@ -18,6 +19,11 @@ const io = socketIO(server, {
 const PORT = process.env.PORT || 3000;
 const roomManager = new RoomManager();
 const acrCloudService = new ACRCloudService();
+
+// Initialize Discord bot
+discordService.initialize().catch(err => {
+  console.error('Discord initialization error:', err);
+});
 
 // Middleware
 app.use(express.json({ limit: '10mb' }));
@@ -206,6 +212,12 @@ io.on('connection', (socket) => {
       song: song,
       timestamp: new Date().toISOString()
     });
+    
+    // Update Discord if enabled
+    const room = roomManager.getRoom(roomId);
+    if (room) {
+      discordService.updateNowPlaying(roomId, song, room.participants.length);
+    }
   });
 
   // Handle disconnection
@@ -217,6 +229,10 @@ io.on('connection', (socket) => {
       if (room.hostId === socket.id) {
         // Host left - notify all participants and close room
         io.to(room.id).emit('host-disconnected');
+        
+        // Update Discord to show party ended
+        discordService.partyEnded(room.id);
+        
         roomManager.deleteRoom(room.id);
         console.log(`Room ${room.id} closed - host disconnected`);
       } else {
