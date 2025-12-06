@@ -61,6 +61,8 @@
 - **Backend**: Node.js, Express, Socket.io
 - **Frontend**: Vanilla JavaScript, HTML5, CSS3
 - **WebRTC**: Native browser APIs for peer-to-peer audio streaming
+  - STUN servers for NAT traversal
+  - Optional TURN server support for relay connections
 - **Web Audio API**: Real-time audio processing, compression, and analysis
 - **ACRCloud API**: Audio fingerprinting for song recognition
 - **Discord.js**: Bot integration for Discord channel updates
@@ -99,6 +101,11 @@
    **Optional for Discord integration:**
    - See [DISCORD-SETUP.md](DISCORD-SETUP.md) for detailed instructions
    - Add your Discord bot token, channel ID, and AudioParty URL to `.env`
+   
+   **Optional for TURN server (VPN/external connections):**
+   - Set up a TURN server for WebRTC relay when direct connections fail
+   - Add `TURN_SERVER_URL`, `TURN_USERNAME`, and `TURN_CREDENTIAL` to `.env`
+   - See [TURN Server Setup](#turn-server-setup) section below
 
 4. **Start the server**:
    ```bash
@@ -189,13 +196,15 @@ server {
 
 **Causes**:
 - Firewall blocking WebRTC
-- Network restrictions (corporate networks)
+- Network restrictions (corporate networks, VPNs)
+- NAT traversal issues
 - Browser privacy settings
 
 **Solutions**:
 - Try on a different network
 - Disable browser extensions temporarily
-- Use a VPN if behind restrictive firewall
+- Set up a TURN server (see TURN Server Setup below)
+- Check if both users can reach the same network
 
 ### Audio Not Playing on Listener Side
 
@@ -224,17 +233,21 @@ server {
 ```
 AudioParty/
 ├── server/
-│   ├── index.js          # Express server & Socket.io
-│   └── rooms.js          # Room management logic
+│   ├── index.js              # Express server & Socket.io
+│   ├── rooms.js              # Room management logic
+│   ├── acrcloud-service.js   # ACRCloud song detection
+│   └── discord-service.js    # Discord bot integration
 ├── client/
-│   ├── index.html        # Main UI
+│   ├── index.html            # Main UI
 │   ├── css/
-│   │   └── styles.css    # Styling
+│   │   └── styles.css        # Styling
 │   └── js/
-│       ├── app.js        # Main application logic
-│       ├── host.js       # Host audio capture
-│       ├── listener.js   # Listener playback
-│       └── webrtc.js     # WebRTC utilities
+│       ├── app.js            # Main application logic
+│       ├── host.js           # Host audio capture & WebRTC
+│       ├── listener.js       # Listener playback & WebRTC
+│       └── webrtc.js         # WebRTC utilities
+├── .env.example              # Environment variables template
+├── DISCORD-SETUP.md          # Discord bot setup guide
 ├── package.json
 └── README.md
 ```
@@ -274,11 +287,60 @@ heroku open
 3. Set build command: `npm install`
 4. Set run command: `npm start`
 
+## 🌐 TURN Server Setup
+
+For connections across different networks, VPNs, or restrictive firewalls, you'll need a TURN server to relay WebRTC traffic.
+
+### Quick Setup with Public TURN Servers
+
+AudioParty includes fallback public TURN servers by default. However, these may be unreliable. For production use, set up your own TURN server.
+
+### Self-Hosted TURN Server (Recommended)
+
+**Requirements:**
+- A server with a public IP address
+- Ports 3478 (UDP/TCP) and 5349 (UDP/TCP) forwarded
+
+**Using Coturn (Docker):**
+
+1. **Set up coturn** (see separate coturn project):
+   ```bash
+   # Deploy coturn container with your configuration
+   docker run -d --network=host \
+     -v ./turnserver.conf:/etc/coturn/turnserver.conf \
+     coturn/coturn
+   ```
+
+2. **Configure DNS**:
+   - Create an A record: `turn.yourdomain.com` → Your public IP
+
+3. **Add to AudioParty `.env`**:
+   ```env
+   TURN_SERVER_URL=turn:turn.yourdomain.com:3478
+   TURN_USERNAME=your_username
+   TURN_CREDENTIAL=your_password
+   ```
+
+4. **Restart AudioParty**:
+   ```bash
+   npm start
+   ```
+
+**Testing TURN Server:**
+- Use [WebRTC Trickle ICE](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/) to test your TURN server
+- You should see "relay" type candidates if TURN is working
+
+### Benefits of TURN Server
+
+- ✅ Connections work across VPNs
+- ✅ Works behind restrictive firewalls
+- ✅ Reliable connections for external users
+- ✅ Better connection success rate (90%+ vs 60-70% with STUN only)
+
 ## 🤝 Contributing
 
 Contributions welcome! Areas for improvement:
 
-- [ ] Add TURN server support for restricted networks
 - [ ] Implement chat feature
 - [ ] Add music playback controls (play/pause sync)
 - [ ] Support for file uploads
