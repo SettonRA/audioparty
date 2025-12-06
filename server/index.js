@@ -212,19 +212,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Disable Discord sharing
-  socket.on('disable-discord-sharing', (data) => {
-    const { roomId } = data;
-    const room = roomManager.getRoom(roomId);
-    if (room && room.hostId === socket.id) {
-      room.discordSharingEnabled = false;
-      console.log(`Discord sharing disabled for room ${roomId}`);
-      
-      // Show party ended message in Discord when sharing is disabled
-      discordService.partyEnded(roomId);
-    }
-  });
-
   // Song detection: Broadcast detected song to room
   socket.on('song-detected', (data) => {
     const { roomId, song } = data;

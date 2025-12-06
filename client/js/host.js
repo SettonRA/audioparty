@@ -287,24 +287,24 @@ const shareDiscordBtn = document.getElementById('share-discord-btn');
 
 if (shareDiscordBtn) {
   shareDiscordBtn.addEventListener('click', () => {
-    discordSharingEnabled = !discordSharingEnabled;
+    if (discordSharingEnabled) {
+      // Already enabled, don't allow toggling off
+      return;
+    }
+    
+    discordSharingEnabled = true;
     
     // Get room code from the displayed text
     const roomCode = document.getElementById('host-room-code').textContent;
     
     console.log('Discord button clicked, enabled:', discordSharingEnabled, 'room:', roomCode);
     
-    if (discordSharingEnabled) {
-      shareDiscordBtn.textContent = '✅ Sharing on Discord';
-      shareDiscordBtn.classList.add('active');
-      socket.emit('enable-discord-sharing', { roomId: roomCode });
-      console.log('Emitted enable-discord-sharing for room:', roomCode);
-    } else {
-      shareDiscordBtn.textContent = '📢 Share on Discord';
-      shareDiscordBtn.classList.remove('active');
-      socket.emit('disable-discord-sharing', { roomId: roomCode });
-      console.log('Emitted disable-discord-sharing for room:', roomCode);
-    }
+    shareDiscordBtn.textContent = '✅ Sharing on Discord';
+    shareDiscordBtn.classList.add('active');
+    shareDiscordBtn.disabled = true;
+    shareDiscordBtn.style.cursor = 'not-allowed';
+    socket.emit('enable-discord-sharing', { roomId: roomCode });
+    console.log('Emitted enable-discord-sharing for room:', roomCode);
   });
 } else {
   console.error('Share Discord button not found!');

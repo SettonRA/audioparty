@@ -31,23 +31,21 @@ class DiscordService {
           const channel = await this.client.channels.fetch(this.channelId);
           console.log(`Discord channel verified: ${channel.name} (${channel.type})`);
           this.isEnabled = true;
-        // Set initial idle status
-        this.client.user.setPresence({
-          activities: [{
-            name: 'All Partied Out',
-            type: ActivityType.Custom,
-            state: '🎉'
-          }],
-          status: 'idle'
-        });
+          // Set initial idle status
+          this.client.user.setPresence({
+            activities: [{
+              name: 'Custom Status',
+              type: ActivityType.Custom,
+              state: 'All Partied Out!'
+            }],
+            status: 'idle'
+          });
         } catch (error) {
           console.error(`Failed to access Discord channel ${this.channelId}:`, error.message);
           console.error('Make sure the bot has access to the channel and proper permissions.');
           this.isEnabled = false;
         }
-      });
-
-      this.client.on('error', (error) => {
+      });      this.client.on('error', (error) => {
         console.error('Discord client error:', error);
       });
 
@@ -69,11 +67,12 @@ class DiscordService {
         ? songInfo.artists.join(', ')
         : songInfo.artist || songInfo.artists || 'Unknown Artist';
       
-      // Update bot status with "Listening to" prefix
+      // Update bot status with custom "Listening to" text
       this.client.user.setPresence({
         activities: [{
-          name: songInfo.title,
-          type: ActivityType.Listening
+          name: 'Custom Status',
+          type: ActivityType.Custom,
+          state: `Listening to ${songInfo.title}`
         }],
         status: 'online'
       });
@@ -144,9 +143,9 @@ class DiscordService {
       // Reset bot status to idle
       this.client.user.setPresence({
         activities: [{
-          name: 'All Partied Out',
+          name: 'Custom Status',
           type: ActivityType.Custom,
-          state: '🎉'
+          state: 'All Partied Out 🎉'
         }],
         status: 'idle'
       });
