@@ -3,11 +3,17 @@ let localStream = null;
 let processedStream = null; // Stream with audio processing applied
 const peerConnections = new Map(); // Map of listenerId -> RTCPeerConnection
 
-// ICE servers configuration (using public STUN servers)
+// ICE servers configuration (STUN servers for NAT traversal, TURN servers for relay)
 const iceServers = {
   iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' }
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun2.l.google.com:19302' },
+    { urls: 'stun:stun3.l.google.com:19302' },
+    { urls: 'stun:stun4.l.google.com:19302' },
+    // TURN servers for NAT traversal when STUN isn't sufficient
+    { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
   ]
 };
 
