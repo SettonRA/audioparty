@@ -8,12 +8,26 @@ const iceServers = {
   iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
-    // TURN servers for NAT traversal when STUN isn't sufficient
-    { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-    { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
-    // Additional TURN servers for redundancy
-    { urls: 'turn:relay1.expressturn.com:3478', username: 'efMVBHB9KLXJO7ZZVN', credential: 'lZq2Hv1v4wgLqVPS' }
+    // TURN servers - using multiple providers for redundancy
+    {
+      urls: [
+        'turn:openrelay.metered.ca:80',
+        'turn:openrelay.metered.ca:443',
+        'turn:openrelay.metered.ca:443?transport=tcp'
+      ],
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    },
+    {
+      urls: 'turn:numb.viagenie.ca',
+      username: 'webrtc@live.com',
+      credential: 'muazkh'
+    },
+    {
+      urls: 'turn:relay1.expressturn.com:3478',
+      username: 'efMVBHB9KLXJO7ZZVN',
+      credential: 'lZq2Hv1v4wgLqVPS'
+    }
   ],
   iceCandidatePoolSize: 10,
   iceTransportPolicy: 'all' // Try all connection types including relay
