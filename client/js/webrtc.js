@@ -1,31 +1,8 @@
 // WebRTC utility functions and shared configuration
 // This file contains shared WebRTC configuration and helper functions
 
-// ICE servers configuration - local TURN for same-network, public for VPN/external
-const iceServers = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    // Your TURN server (accessible locally and externally)
-    {
-      urls: 'turn:turn.cineclark.studio:3478',
-      username: 'audioparty',
-      credential: 'AudioParty2025!'
-    },
-    // Public TURN servers for VPN/external connections
-    {
-      urls: 'turn:openrelay.metered.ca:443',
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
-    },
-    {
-      urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
-    }
-  ],
-  iceCandidatePoolSize: 10,
-  iceTransportPolicy: 'relay' // Force TURN relay for testing
-};
+// Note: ICE servers are now loaded from /api/ice-servers endpoint
+// This file is kept for utility functions only
 
 // Log WebRTC stats for debugging (optional)
 function logConnectionStats(peerConnection, peerId) {

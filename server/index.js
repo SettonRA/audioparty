@@ -41,6 +41,38 @@ app.use((req, res, next) => {
 // Serve static files from client directory
 app.use(express.static(path.join(__dirname, '../client')));
 
+// API endpoint to get ICE server configuration
+app.get('/api/ice-servers', (req, res) => {
+  const iceServers = {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' }
+    ]
+  };
+  
+  // Add TURN server if configured
+  if (process.env.TURN_SERVER_URL && process.env.TURN_USERNAME && process.env.TURN_CREDENTIAL) {
+    iceServers.iceServers.push({
+      urls: process.env.TURN_SERVER_URL,
+      username: process.env.TURN_USERNAME,
+      credential: process.env.TURN_CREDENTIAL
+    });
+    
+    // Add public TURN fallback
+    iceServers.iceServers.push({
+      urls: 'turn:openrelay.metered.ca:443',
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    });
+    iceServers.iceServers.push({
+      urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    });
+  }
+  
+  res.json(iceServers);
+});
+
 // Catch-all route to serve index.html for room codes (enables URL-based room joining)
 // Only match paths that look like room codes (6 alphanumeric characters)
 app.get('/:roomCode([A-Z0-9]{6})', (req, res) => {

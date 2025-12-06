@@ -3,31 +3,20 @@ let localStream = null;
 let processedStream = null; // Stream with audio processing applied
 const peerConnections = new Map(); // Map of listenerId -> RTCPeerConnection
 
-// ICE servers configuration - local TURN for same-network, public for VPN/external
-const iceServers = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    // Your TURN server (accessible locally and externally)
-    {
-      urls: 'turn:turn.cineclark.studio:3478',
-      username: 'audioparty',
-      credential: 'AudioParty2025!'
-    },
-    // Public TURN servers for VPN/external connections
-    {
-      urls: 'turn:openrelay.metered.ca:443',
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
-    },
-    {
-      urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
-    }
-  ],
-  iceCandidatePoolSize: 10,
-  iceTransportPolicy: 'relay' // Force TURN relay for testing
+// ICE servers configuration - fetched from server
+let iceServers = {
+  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  iceCandidatePoolSize: 10
 };
+
+// Fetch ICE server configuration from server
+fetch('/api/ice-servers')
+  .then(res => res.json())
+  .then(config => {
+    iceServers = { ...config, iceCandidatePoolSize: 10 };
+    console.log('Loaded ICE server configuration:', iceServers);
+  })
+  .catch(err => console.error('Failed to load ICE servers:', err));
 
 // Start streaming button
 document.getElementById('start-streaming-btn').addEventListener('click', async () => {
