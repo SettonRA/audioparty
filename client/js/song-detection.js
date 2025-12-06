@@ -316,8 +316,3 @@ function escapeHtml(text) {
   };
   return text.replace(/[&<>"']/g, m => map[m]);
 }
-
-// Manual song detection button
-document.getElementById('detect-song-btn')?.addEventListener('click', () => {
-  detectCurrentSong();
-});

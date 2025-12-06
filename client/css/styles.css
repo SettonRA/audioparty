@@ -45,18 +45,10 @@ header {
   margin-bottom: 32px;
 }
 
-header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 8px;
-  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.tagline {
-  color: var(--text-secondary);
-  font-size: 1rem;
+.logo {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
 }
 
 /* Screen Management */
@@ -522,19 +514,10 @@ input[type="range"]::-moz-range-thumb {
   color: var(--text-secondary);
 }
 
-#detect-song-btn {
-  width: 100%;
-  margin-bottom: 16px;
-}
-
 /* Responsive */
 @media (max-width: 640px) {
   .container {
     padding: 24px;
-  }
-  
-  header h1 {
-    font-size: 2rem;
   }
   
   .status-bar {
