@@ -6,10 +6,18 @@
 
 - **Tab Audio Sharing**: Share audio from any browser tab (Spotify, YouTube, etc.)
 - **Real-time Streaming**: Low-latency audio streaming using WebRTC (~200-500ms)
-- **Song Recognition**: Automatic song detection using ACRCloud (shows title, artist, album)
+- **Automatic Song Detection**: Smart silence-based song recognition using ACRCloud
+  - Displays song title, artist, and album art in real-time
+  - Automatically detects song changes based on audio patterns
+  - Shared across all party participants
+- **Audio Normalization**: Dynamic compression and gain boost for consistent volume levels
+  - Automatically boosts quiet audio sources
+  - Prevents volume spikes with intelligent compression
+  - Ensures all listeners hear clear, balanced audio
 - **Simple Room System**: Create or join parties with 6-character room codes
-- **Volume Control**: Individual volume control for listeners
+- **Individual Volume Control**: Personal volume slider for each listener (0-100%)
 - **No Data Storage**: Completely private, no recordings or data stored
+- **Modern UI**: Clean interface with logo and real-time status indicators
 - **Modern Browser Support**: Works on latest Chrome and Edge
 
 ## 🏗️ Architecture
@@ -46,8 +54,10 @@
 
 - **Backend**: Node.js, Express, Socket.io
 - **Frontend**: Vanilla JavaScript, HTML5, CSS3
-- **WebRTC**: Native browser APIs
-- **Signaling**: Socket.io for peer coordination
+- **WebRTC**: Native browser APIs for peer-to-peer audio streaming
+- **Web Audio API**: Real-time audio processing, compression, and analysis
+- **ACRCloud API**: Audio fingerprinting for song recognition
+- **Signaling**: Socket.io for peer coordination and song metadata broadcast
 
 ## 🚀 Quick Start
 
@@ -68,11 +78,16 @@
    npm install
    ```
 
-3. **Configure environment variables** (optional - for song recognition):
+3. **Configure environment variables**:
    ```bash
    cp .env.example .env
-   # Edit .env and add your ACRCloud credentials
+   # Edit .env and add your ACRCloud credentials for song detection
    ```
+   
+   To get ACRCloud credentials:
+   - Sign up at [ACRCloud Console](https://console.acrcloud.com/)
+   - Create a new project with "Audio & Video Recognition" type
+   - Copy your Host, Access Key, and Access Secret to `.env`
 
 4. **Start the server**:
    ```bash
@@ -99,15 +114,18 @@ npm run dev
    - Select the tab playing music (Spotify, YouTube, etc.)
    - **Important**: Check "Share audio" or "Share tab audio"
 4. Share the 6-character room code with friends
-5. Keep the tab active while streaming
+5. Song detection will automatically identify tracks as they play
+6. Audio is automatically normalized for optimal listening quality
+7. Keep the tab active while streaming
 
 ### As a Listener:
 
 1. Click **"Join a Party"**
 2. Enter the 6-character room code
 3. Wait for connection (usually 1-3 seconds)
-4. Adjust volume as needed
-5. Enjoy the music!
+4. See currently playing song information in real-time
+5. Adjust volume as needed with the volume slider
+6. Enjoy the music with optimized audio quality!
 
 ## 🔧 Configuration
 
