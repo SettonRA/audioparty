@@ -71,8 +71,10 @@ async function detectCurrentSong() {
   }
 
   try {
-    // Show detecting status
-    updateSongDisplay({ status: 'detecting' });
+    // Only show detecting status if no song has been detected yet
+    if (!lastDetectedSong) {
+      updateSongDisplay({ status: 'detecting' });
+    }
     
     // Capture 10 seconds of audio
     const audioData = await captureAudioSample(10);
@@ -107,11 +109,17 @@ async function detectCurrentSong() {
       console.log('Song detected:', result.song.title, '-', result.song.artist);
     } else {
       console.log('No song match found');
-      updateSongDisplay({ status: 'not-found', message: result.message || 'No match found' });
+      // Only show "not found" if no previous song exists, otherwise keep showing last song
+      if (!lastDetectedSong) {
+        updateSongDisplay({ status: 'not-found', message: result.message || 'No match found' });
+      }
     }
   } catch (error) {
     console.error('Song detection error:', error);
-    updateSongDisplay({ status: 'error', message: 'Detection failed' });
+    // Only show error if no previous song exists, otherwise keep showing last song
+    if (!lastDetectedSong) {
+      updateSongDisplay({ status: 'error', message: 'Detection failed' });
+    }
   }
 }
 
