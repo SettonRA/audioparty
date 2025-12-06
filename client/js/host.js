@@ -288,13 +288,18 @@ const shareDiscordBtn = document.getElementById('share-discord-btn');
 shareDiscordBtn.addEventListener('click', () => {
   discordSharingEnabled = !discordSharingEnabled;
   
+  // Get room code from the displayed text
+  const roomCode = document.getElementById('host-room-code').textContent;
+  
   if (discordSharingEnabled) {
     shareDiscordBtn.textContent = '✅ Sharing on Discord';
     shareDiscordBtn.classList.add('active');
-    socket.emit('enable-discord-sharing', { roomId: currentRoomId });
+    socket.emit('enable-discord-sharing', { roomId: roomCode });
+    console.log('Discord sharing enabled for room:', roomCode);
   } else {
     shareDiscordBtn.textContent = '📢 Share on Discord';
     shareDiscordBtn.classList.remove('active');
-    socket.emit('disable-discord-sharing', { roomId: currentRoomId });
+    socket.emit('disable-discord-sharing', { roomId: roomCode });
+    console.log('Discord sharing disabled for room:', roomCode);
   }
 });
