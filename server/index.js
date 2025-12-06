@@ -219,6 +219,9 @@ io.on('connection', (socket) => {
     if (room && room.hostId === socket.id) {
       room.discordSharingEnabled = false;
       console.log(`Discord sharing disabled for room ${roomId}`);
+      
+      // Show party ended message in Discord when sharing is disabled
+      discordService.partyEnded(roomId);
     }
   });
 
