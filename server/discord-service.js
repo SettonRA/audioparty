@@ -45,10 +45,15 @@ class DiscordService {
     try {
       const channel = await this.client.channels.fetch(this.channelId);
       
+      // Handle artists as either string or array
+      const artistText = Array.isArray(songInfo.artists) 
+        ? songInfo.artists.join(', ')
+        : songInfo.artist || songInfo.artists || 'Unknown Artist';
+      
       const embed = new EmbedBuilder()
         .setColor(0x1DB954) // Spotify green
         .setTitle('🎵 AudioParty - Now Playing')
-        .setDescription(`**${songInfo.title}**\n${songInfo.artists.join(', ')}`)
+        .setDescription(`**${songInfo.title}**\n${artistText}`)
         .addFields(
           { name: '💿 Album', value: songInfo.album || 'Unknown', inline: true },
           { name: '👥 Listeners', value: listenerCount.toString(), inline: true }
