@@ -202,6 +202,26 @@ io.on('connection', (socket) => {
     io.to(data.target).emit('ice-candidate', forwardData);
   });
 
+  // Enable Discord sharing
+  socket.on('enable-discord-sharing', (data) => {
+    const { roomId } = data;
+    const room = roomManager.getRoom(roomId);
+    if (room && room.hostId === socket.id) {
+      room.discordSharingEnabled = true;
+      console.log(`Discord sharing enabled for room ${roomId}`);
+    }
+  });
+
+  // Disable Discord sharing
+  socket.on('disable-discord-sharing', (data) => {
+    const { roomId } = data;
+    const room = roomManager.getRoom(roomId);
+    if (room && room.hostId === socket.id) {
+      room.discordSharingEnabled = false;
+      console.log(`Discord sharing disabled for room ${roomId}`);
+    }
+  });
+
   // Song detection: Broadcast detected song to room
   socket.on('song-detected', (data) => {
     const { roomId, song } = data;
@@ -213,9 +233,9 @@ io.on('connection', (socket) => {
       timestamp: new Date().toISOString()
     });
     
-    // Update Discord if enabled
+    // Update Discord if enabled for this room
     const room = roomManager.getRoom(roomId);
-    if (room) {
+    if (room && room.discordSharingEnabled) {
       discordService.updateNowPlaying(roomId, song, room.participants.length);
     }
   });
@@ -230,8 +250,10 @@ io.on('connection', (socket) => {
         // Host left - notify all participants and close room
         io.to(room.id).emit('host-disconnected');
         
-        // Update Discord to show party ended
-        discordService.partyEnded(room.id);
+        // Update Discord to show party ended (only if sharing was enabled)
+        if (room.discordSharingEnabled) {
+          discordService.partyEnded(room.id);
+        }
         
         roomManager.deleteRoom(room.id);
         console.log(`Room ${room.id} closed - host disconnected`);

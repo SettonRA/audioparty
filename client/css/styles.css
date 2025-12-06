@@ -112,6 +112,26 @@ button {
   border-color: var(--primary-color);
 }
 
+.discord-btn {
+  background: #5865F2;
+  color: white;
+  border: none;
+}
+
+.discord-btn:hover {
+  background: #4752C4;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(88, 101, 242, 0.4);
+}
+
+.discord-btn.active {
+  background: var(--success-color);
+}
+
+.discord-btn.active:hover {
+  background: #059669;
+}
+
 .danger-btn {
   background: var(--danger-color);
   color: white;

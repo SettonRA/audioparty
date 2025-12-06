@@ -9,7 +9,8 @@ class RoomManager {
       id: roomId,
       hostId: hostId,
       participants: [hostId],
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      discordSharingEnabled: false
     };
     this.rooms.set(roomId, room);
     return room;

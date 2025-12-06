@@ -280,3 +280,21 @@ socket.on('ice-candidate', async (data) => {
 function updateParticipantCount(count) {
   document.getElementById('host-participant-count').textContent = count;
 }
+
+// Discord sharing functionality
+let discordSharingEnabled = false;
+const shareDiscordBtn = document.getElementById('share-discord-btn');
+
+shareDiscordBtn.addEventListener('click', () => {
+  discordSharingEnabled = !discordSharingEnabled;
+  
+  if (discordSharingEnabled) {
+    shareDiscordBtn.textContent = '✅ Sharing on Discord';
+    shareDiscordBtn.classList.add('active');
+    socket.emit('enable-discord-sharing', { roomId: currentRoomId });
+  } else {
+    shareDiscordBtn.textContent = '📢 Share on Discord';
+    shareDiscordBtn.classList.remove('active');
+    socket.emit('disable-discord-sharing', { roomId: currentRoomId });
+  }
+});
