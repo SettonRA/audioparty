@@ -186,3 +186,45 @@ function disconnectFromParty() {
     remoteAudio.srcObject = null;
   }
 }
+
+// Listen for song updates from host
+socket.on('song-update', (data) => {
+  console.log('Received song update:', data.song);
+  updateListenerSongDisplay(data.song);
+});
+
+// Update song display for listeners
+function updateListenerSongDisplay(song) {
+  const container = document.getElementById('listener-song-display');
+  if (!container) return;
+
+  if (song) {
+    container.innerHTML = `
+      <div class="song-info">
+        <div class="song-title">${escapeHtml(song.title)}</div>
+        <div class="song-artist">${escapeHtml(song.artist)}</div>
+        ${song.album ? `<div class="song-album">${escapeHtml(song.album)}</div>` : ''}
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <div class="song-info">
+        <div class="song-status">🎵 Waiting for song info...</div>
+      </div>
+    `;
+  }
+}
+
+// Escape HTML helper (shared with song-detection.js)
+if (typeof escapeHtml === 'undefined') {
+  function escapeHtml(text) {
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+  }
+}

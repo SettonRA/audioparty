@@ -468,6 +468,65 @@ input[type="range"]::-moz-range-thumb {
   margin-bottom: 24px;
 }
 
+/* Song Display */
+.song-display {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.song-info {
+  text-align: center;
+  width: 100%;
+}
+
+.song-info.detecting {
+  opacity: 0.7;
+}
+
+.song-info.not-found {
+  opacity: 0.6;
+}
+
+.song-info.error {
+  color: var(--danger-color);
+}
+
+.song-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.song-artist {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.song-album {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+.song-status {
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+#detect-song-btn {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .container {
@@ -482,5 +541,13 @@ input[type="range"]::-moz-range-thumb {
     flex-direction: column;
     gap: 12px;
     text-align: center;
+  }
+
+  .song-title {
+    font-size: 1.1rem;
+  }
+
+  .song-artist {
+    font-size: 1rem;
   }
 }

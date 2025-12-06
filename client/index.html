@@ -93,6 +93,15 @@
                     <span class="pulse"></span>
                     <span>Streaming Audio</span>
                 </div>
+
+                <!-- Current Song Display -->
+                <div id="current-song-display" class="song-display">
+                    <div class="song-info">
+                        <div class="song-status">🎵 Listening for songs...</div>
+                    </div>
+                </div>
+                
+                <button id="detect-song-btn" class="secondary-btn">🔍 Detect Song Now</button>
                 
                 <div class="share-buttons">
                     <button id="copy-code-btn" class="secondary-btn">Copy Code</button>
@@ -123,6 +132,13 @@
                     <span>Receiving Audio</span>
                 </div>
 
+                <!-- Current Song Display for Listeners -->
+                <div id="listener-song-display" class="song-display">
+                    <div class="song-info">
+                        <div class="song-status">🎵 Waiting for song info...</div>
+                    </div>
+                </div>
+
                 <div class="audio-controls">
                     <label for="volume-slider">Volume</label>
                     <input type="range" id="volume-slider" min="0" max="100" value="80">
@@ -150,6 +166,7 @@
     <!-- Scripts -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/song-detection.js"></script>
     <script src="js/host.js"></script>
     <script src="js/listener.js"></script>
     <script src="js/webrtc.js"></script>

@@ -6,6 +6,7 @@
 
 - **Tab Audio Sharing**: Share audio from any browser tab (Spotify, YouTube, etc.)
 - **Real-time Streaming**: Low-latency audio streaming using WebRTC (~200-500ms)
+- **Song Recognition**: Automatic song detection using ACRCloud (shows title, artist, album)
 - **Simple Room System**: Create or join parties with 6-character room codes
 - **Volume Control**: Individual volume control for listeners
 - **No Data Storage**: Completely private, no recordings or data stored
@@ -67,7 +68,13 @@
    npm install
    ```
 
-3. **Start the server**:
+3. **Configure environment variables** (optional - for song recognition):
+   ```bash
+   cp .env.example .env
+   # Edit .env and add your ACRCloud credentials
+   ```
+
+4. **Start the server**:
    ```bash
    npm start
    ```
@@ -253,6 +260,18 @@ Contributions welcome! Areas for improvement:
 
 MIT License - feel free to use this project for personal or commercial purposes.
 
+## 🎵 Song Recognition
+
+AudioParty includes automatic song detection powered by ACRCloud:
+
+- **Automatic**: Detects songs every 30 seconds
+- **Manual**: Click "Detect Song Now" for immediate recognition
+- **Real-time**: Song info displayed to all participants
+- **Setup**: Get free API credentials at [console.acrcloud.com](https://console.acrcloud.com)
+- **Free tier**: 2,000 recognitions/month (~333 hours of parties)
+
+See `SONG-DETECTION-DEPLOYMENT.md` for detailed setup instructions.
+
 ## 💡 Tips
 
 - **Host**: Keep your music tab active and visible for best performance
@@ -260,6 +279,7 @@ MIT License - feel free to use this project for personal or commercial purposes.
 - **Listeners**: Use headphones to avoid echo if host is in same room
 - **Network**: Works best on stable WiFi or wired connections
 - **Privacy**: Use unique room codes and don't share publicly
+- **Song Detection**: Works best with clear audio (avoid heavily compressed streams)
 
 ## 🆘 Support
 

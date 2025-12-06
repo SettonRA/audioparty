@@ -68,6 +68,11 @@ async function startAudioCapture() {
     document.getElementById('host-setup').classList.add('hidden');
     document.getElementById('host-streaming').classList.remove('hidden');
 
+    // Initialize song detection
+    if (typeof initializeSongDetection === 'function') {
+      initializeSongDetection(localStream);
+    }
+
     // Handle stream end (user stops sharing)
     localStream.getAudioTracks()[0].addEventListener('ended', () => {
       console.log('Audio track ended');
@@ -82,6 +87,11 @@ async function startAudioCapture() {
 }
 
 function stopStreaming() {
+  // Stop song detection
+  if (typeof stopSongDetection === 'function') {
+    stopSongDetection();
+  }
+
   // Stop local stream
   if (localStream) {
     localStream.getTracks().forEach(track => track.stop());

@@ -1,8 +1,12 @@
+require('dotenv').config();
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
 const path = require('path');
 const RoomManager = require('./rooms');
+const ACRCloudService = require('./acrcloud-service');
+const ACRCloudService = require('./acrcloud-service');
 
 const app = express();
 const server = http.createServer(app);
@@ -15,6 +19,10 @@ const io = socketIO(server, {
 
 const PORT = process.env.PORT || 3000;
 const roomManager = new RoomManager();
+const acrCloudService = new ACRCloudService();
+
+// Middleware
+app.use(express.json({ limit: '10mb' }));
 
 // Serve static files from client directory
 app.use(express.static(path.join(__dirname, '../client')));
@@ -28,6 +36,78 @@ app.get('/:roomCode([A-Z0-9]{6})', (req, res) => {
 // Root path
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/index.html'));
+});
+
+// Song recognition endpoint
+app.post('/api/identify-song', async (req, res) => {
+  try {
+    if (!acrCloudService.isConfigured()) {
+      return res.status(503).json({
+        success: false,
+        error: 'Song recognition not configured'
+      });
+    }
+
+    const { audioData } = req.body;
+    
+    if (!audioData) {
+      return res.status(400).json({
+        success: false,
+        error: 'No audio data provided'
+      });
+    }
+
+    // Convert base64 audio data to buffer
+    const audioBuffer = Buffer.from(audioData, 'base64');
+    
+    // Identify the song
+    const result = await acrCloudService.identify(audioBuffer);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Song identification error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: error.message
+    });
+  }
+});
+
+// Song recognition endpoint
+app.post('/api/identify-song', async (req, res) => {
+  try {
+    if (!acrCloudService.isConfigured()) {
+      return res.status(503).json({
+        success: false,
+        error: 'Song recognition not configured'
+      });
+    }
+
+    const { audioData } = req.body;
+    
+    if (!audioData) {
+      return res.status(400).json({
+        success: false,
+        error: 'No audio data provided'
+      });
+    }
+
+    // Convert base64 audio data to buffer
+    const audioBuffer = Buffer.from(audioData, 'base64');
+    
+    // Identify the song
+    const result = await acrCloudService.identify(audioBuffer);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Song identification error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: error.message
+    });
+  }
 });
 
 // Socket.io connection handling
@@ -116,6 +196,18 @@ io.on('connection', (socket) => {
     };
     console.log('Forwarding ICE candidate with sender:', forwardData.sender);
     io.to(data.target).emit('ice-candidate', forwardData);
+  });
+
+  // Song detection: Broadcast detected song to room
+  socket.on('song-detected', (data) => {
+    const { roomId, song } = data;
+    console.log(`Song detected in room ${roomId}:`, song.title, '-', song.artist);
+    
+    // Broadcast to all participants in the room (including host)
+    io.to(roomId).emit('song-update', {
+      song: song,
+      timestamp: new Date().toISOString()
+    });
   });
 
   // Handle disconnection
