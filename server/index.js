@@ -28,6 +28,16 @@ discordService.initialize().catch(err => {
 // Middleware
 app.use(express.json({ limit: '10mb' }));
 
+// Disable caching for JavaScript files to ensure clients get latest code
+app.use((req, res, next) => {
+  if (req.path.endsWith('.js')) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
+
 // Serve static files from client directory
 app.use(express.static(path.join(__dirname, '../client')));
 
