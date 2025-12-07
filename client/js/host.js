@@ -40,11 +40,13 @@ fetch('/api/ice-servers')
   })
   .catch(err => console.error('Failed to load ICE servers:', err));
 
-// Initialize gain controls
-initializeGainControls();
-
 // Start streaming button
 document.getElementById('start-streaming-btn').addEventListener('click', async () => {
+  // Initialize gain controls on first click
+  if (!hostGainSlider) {
+    initializeGainControls();
+  }
+  
   try {
     await startAudioCapture();
   } catch (error) {
