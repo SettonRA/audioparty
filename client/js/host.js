@@ -40,26 +40,43 @@ fetch('/api/ice-servers')
   })
   .catch(err => console.error('Failed to load ICE servers:', err));
 
-// Start streaming button
-document.getElementById('start-streaming-btn').addEventListener('click', async () => {
-  // Initialize gain controls on first click
-  if (!hostGainSlider) {
-    initializeGainControls();
+// Initialize host controls when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initHostControls);
+} else {
+  initHostControls();
+}
+
+function initHostControls() {
+  const startBtn = document.getElementById('start-streaming-btn');
+  const stopBtn = document.getElementById('stop-streaming-btn');
+  
+  console.log('Initializing host controls, start button:', startBtn, 'stop button:', stopBtn);
+  
+  if (startBtn) {
+    startBtn.addEventListener('click', async () => {
+      console.log('Start streaming button clicked');
+      // Initialize gain controls on first click
+      if (!hostGainSlider) {
+        initializeGainControls();
+      }
+      
+      try {
+        await startAudioCapture();
+      } catch (error) {
+        console.error('Error starting audio capture:', error);
+        alert('Failed to capture audio. Make sure you selected a tab and enabled "Share audio".');
+      }
+    });
   }
   
-  try {
-    await startAudioCapture();
-  } catch (error) {
-    console.error('Error starting audio capture:', error);
-    alert('Failed to capture audio. Make sure you selected a tab and enabled "Share audio".');
+  if (stopBtn) {
+    stopBtn.addEventListener('click', () => {
+      stopStreaming();
+      location.reload();
+    });
   }
-});
-
-// Stop streaming button
-document.getElementById('stop-streaming-btn').addEventListener('click', () => {
-  stopStreaming();
-  location.reload();
-});
+}
 
 // Handle server disconnect
 socket.on('disconnect', () => {
