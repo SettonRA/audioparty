@@ -50,6 +50,7 @@ if (document.readyState === 'loading') {
 function initHostControls() {
   const startBtn = document.getElementById('start-streaming-btn');
   const stopBtn = document.getElementById('stop-streaming-btn');
+  const cancelBtn = document.getElementById('cancel-host-btn');
   
   console.log('Initializing host controls, start button:', startBtn, 'stop button:', stopBtn);
   
@@ -74,6 +75,12 @@ function initHostControls() {
     stopBtn.addEventListener('click', () => {
       stopStreaming();
       location.reload();
+    });
+  }
+  
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+      location.href = '/';
     });
   }
 }
