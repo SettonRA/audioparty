@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 APP_DIR="$HOME/audioparty"
-REPO_URL="https://github.com/yourusername/audioparty.git"  # Update this if using git
+REPO_URL="https://github.com/SettonRA/audioparty.git"  # Update this if using your own git
 SERVICE_PORT=3000
 
 # Functions

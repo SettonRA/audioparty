@@ -65,7 +65,7 @@ AUDIOPARTY_URL=https://your-domain.com
 Replace:
 - `your_bot_token_here` - The bot token from Step 2
 - `your_channel_id_here` - The channel ID from Step 5
-- `https://your-domain.com` - Your AudioParty URL (e.g., `http://192.168.1.111:3000`)
+- `https://your-domain.com` - Your AudioParty URL 
 
 ## Step 7: Deploy
 
