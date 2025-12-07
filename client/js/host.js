@@ -1,6 +1,21 @@
 // Host functionality - audio capture and streaming
 let localStream = null;
+let processedStream = null;
+let audioContext = null;
+let gainNode = null;
 const peerConnections = new Map(); // Map of listenerId -> RTCPeerConnection
+
+// Gain control
+const hostGainSlider = document.getElementById('host-gain-slider');
+const hostGainValue = document.getElementById('host-gain-value');
+
+hostGainSlider.addEventListener('input', (e) => {
+  const gain = e.target.value / 100;
+  if (gainNode) {
+    gainNode.gain.setValueAtTime(gain, audioContext.currentTime);
+  }
+  hostGainValue.textContent = gain.toFixed(1) + 'x';
+});
 
 // ICE servers configuration - fetched from server
 let iceServers = {
@@ -71,6 +86,9 @@ async function startAudioCapture() {
     const videoTracks = localStream.getVideoTracks();
     videoTracks.forEach(track => track.stop());
 
+    // Apply gain control
+    processedStream = applyGainControl(localStream);
+
     // Update UI
     document.getElementById('host-setup').classList.add('hidden');
     document.getElementById('host-streaming').classList.remove('hidden');
@@ -99,6 +117,19 @@ function stopStreaming() {
     stopSongDetection();
   }
 
+  // Stop processed stream
+  if (processedStream) {
+    processedStream.getTracks().forEach(track => track.stop());
+    processedStream = null;
+  }
+
+  // Close audio context
+  if (audioContext) {
+    audioContext.close();
+    audioContext = null;
+    gainNode = null;
+  }
+
   // Stop local stream
   if (localStream) {
     localStream.getTracks().forEach(track => track.stop());
@@ -110,12 +141,28 @@ function stopStreaming() {
   peerConnections.clear();
 }
 
+function applyGainControl(stream) {
+  audioContext = new AudioContext();
+  const source = audioContext.createMediaStreamSource(stream);
+  
+  gainNode = audioContext.createGain();
+  const initialGain = hostGainSlider.value / 100;
+  gainNode.gain.value = initialGain;
+  
+  const destination = audioContext.createMediaStreamDestination();
+  source.connect(gainNode);
+  gainNode.connect(destination);
+  
+  console.log('Applied gain control:', initialGain + 'x');
+  return destination.stream;
+}
+
 // Handle new listener joining
 socket.on('listener-joined', async (data) => {
   console.log('Listener joined:', data.listenerId);
   updateParticipantCount(data.participantCount);
   
-  if (localStream) {
+  if (processedStream || localStream) {
     await createPeerConnection(data.listenerId);
   }
 });
@@ -149,8 +196,9 @@ async function createPeerConnection(listenerId) {
     console.log(`[${listenerId}] Connection state:`, pc.connectionState);
   };
 
-  // Add audio stream to peer connection
-  const audioTracks = localStream.getAudioTracks();
+  // Add audio stream to peer connection (use processed stream if available)
+  const streamToSend = processedStream || localStream;
+  const audioTracks = streamToSend.getAudioTracks();
   console.log(`Adding ${audioTracks.length} audio tracks to peer connection for:`, listenerId);
   audioTracks.forEach(track => {
     const sender = pc.addTrack(track, localStream);
