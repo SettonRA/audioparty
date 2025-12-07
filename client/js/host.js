@@ -1,6 +1,5 @@
 // Host functionality - audio capture and streaming
 let localStream = null;
-let processedStream = null; // Stream with audio processing applied
 const peerConnections = new Map(); // Map of listenerId -> RTCPeerConnection
 
 // ICE servers configuration - fetched from server
@@ -72,9 +71,6 @@ async function startAudioCapture() {
     const videoTracks = localStream.getVideoTracks();
     videoTracks.forEach(track => track.stop());
 
-    // Apply audio normalization
-    processedStream = await applyAudioNormalization(localStream);
-
     // Update UI
     document.getElementById('host-setup').classList.add('hidden');
     document.getElementById('host-streaming').classList.remove('hidden');
@@ -103,12 +99,6 @@ function stopStreaming() {
     stopSongDetection();
   }
 
-  // Stop processed stream
-  if (processedStream) {
-    processedStream.getTracks().forEach(track => track.stop());
-    processedStream = null;
-  }
-
   // Stop local stream
   if (localStream) {
     localStream.getTracks().forEach(track => track.stop());
@@ -120,42 +110,12 @@ function stopStreaming() {
   peerConnections.clear();
 }
 
-// Apply audio normalization to boost quiet audio
-async function applyAudioNormalization(stream) {
-  const audioContext = new AudioContext();
-  const source = audioContext.createMediaStreamSource(stream);
-  
-  // Create a compressor to normalize volume levels
-  const compressor = audioContext.createDynamicsCompressor();
-  compressor.threshold.setValueAtTime(-24, audioContext.currentTime); // Start compressing at -24dB
-  compressor.knee.setValueAtTime(30, audioContext.currentTime); // Smooth compression curve
-  compressor.ratio.setValueAtTime(12, audioContext.currentTime); // Strong compression ratio
-  compressor.attack.setValueAtTime(0.003, audioContext.currentTime); // Fast attack
-  compressor.release.setValueAtTime(0.25, audioContext.currentTime); // Medium release
-  
-  // Create a gain node to boost the overall level
-  const gainNode = audioContext.createGain();
-  gainNode.gain.setValueAtTime(2.0, audioContext.currentTime); // Boost by 2x (6dB)
-  
-  // Connect the audio processing chain
-  source.connect(compressor);
-  compressor.connect(gainNode);
-  
-  // Create destination to capture the processed audio
-  const destination = audioContext.createMediaStreamDestination();
-  gainNode.connect(destination);
-  
-  console.log('Audio normalization applied: compression + 2x gain boost');
-  
-  return destination.stream;
-}
-
 // Handle new listener joining
 socket.on('listener-joined', async (data) => {
   console.log('Listener joined:', data.listenerId);
   updateParticipantCount(data.participantCount);
   
-  if (processedStream || localStream) {
+  if (localStream) {
     await createPeerConnection(data.listenerId);
   }
 });
@@ -189,9 +149,8 @@ async function createPeerConnection(listenerId) {
     console.log(`[${listenerId}] Connection state:`, pc.connectionState);
   };
 
-  // Add processed audio stream to peer connection (or fall back to local stream)
-  const streamToSend = processedStream || localStream;
-  const audioTracks = streamToSend.getAudioTracks();
+  // Add audio stream to peer connection
+  const audioTracks = localStream.getAudioTracks();
   console.log(`Adding ${audioTracks.length} audio tracks to peer connection for:`, listenerId);
   audioTracks.forEach(track => {
     const sender = pc.addTrack(track, localStream);
