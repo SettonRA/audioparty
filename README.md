@@ -26,35 +26,6 @@
 - **Modern UI**: Clean interface with logo and real-time status indicators
 - **Modern Browser Support**: Works on latest Chrome and Edge
 
-## 🏗️ Architecture
-
-```
-┌─────────────────┐
-│   Host Browser  │
-│  (Spotify Tab)  │
-└────────┬────────┘
-         │ getDisplayMedia()
-         │ captures tab audio
-         ▼
-┌─────────────────┐
-│ WebRTC Peer     │
-│ Connection      │
-└────────┬────────┘
-         │
-         │ Socket.io (signaling)
-         ▼
-┌─────────────────┐
-│  Node.js Server │
-│  (Room Manager) │
-└────────┬────────┘
-         │
-         │ WebRTC (audio)
-         ▼
-┌─────────────────┐
-│ Listener 1-4    │
-│  (Browsers)     │
-└─────────────────┘
-```
 
 ### Technology Stack
 
@@ -219,38 +190,15 @@ server {
 
 ## 🌐 Browser Compatibility
 
-| Browser | Min Version | Tab Audio Sharing |
-|---------|-------------|-------------------|
-| Chrome  | 74+         | ✅ Full support    |
-| Firefox | Not tested  | ⚠️ Limited        |
-| Edge    | 79+         | ✅ Full support    |
-| Safari  | Not tested  | ⚠️ Limited        |
+| Browser | Tab Audio Sharing |
+|---------|-------------------|
+| Chrome  | ✅ Full support   |
+| Edge    | ✅ Full support   |
+| Firefox | ⚠️ Listen only    |
+| Safari  | ⚠️ Not Tested     |
 
 **Note**: Safari has limited `getDisplayMedia()` support and may not work properly.
 
-## 📁 Project Structure
-
-```
-AudioParty/
-├── server/
-│   ├── index.js              # Express server & Socket.io
-│   ├── rooms.js              # Room management logic
-│   ├── acrcloud-service.js   # ACRCloud song detection
-│   └── discord-service.js    # Discord bot integration
-├── client/
-│   ├── index.html            # Main UI
-│   ├── css/
-│   │   └── styles.css        # Styling
-│   └── js/
-│       ├── app.js            # Main application logic
-│       ├── host.js           # Host audio capture & WebRTC
-│       ├── listener.js       # Listener playback & WebRTC
-│       └── webrtc.js         # WebRTC utilities
-├── .env.example              # Environment variables template
-├── DISCORD-SETUP.md          # Discord bot setup guide
-├── package.json
-└── README.md
-```
 
 ## 🔐 Privacy & Security
 
@@ -337,20 +285,6 @@ AudioParty includes fallback public TURN servers by default. However, these may 
 - ✅ Reliable connections for external users
 - ✅ Better connection success rate (90%+ vs 60-70% with STUN only)
 
-## 🤝 Contributing
-
-Contributions welcome! Areas for improvement:
-
-- [ ] Implement chat feature
-- [ ] Add music playback controls (play/pause sync)
-- [ ] Support for file uploads
-- [ ] Mobile app versions
-- [ ] Better error handling and reconnection logic
-
-## 📄 License
-
-MIT License - feel free to use this project for personal or commercial purposes.
-
 ## 🎵 Song Recognition
 
 AudioParty includes automatic song detection powered by ACRCloud:
@@ -372,16 +306,10 @@ See `SONG-DETECTION-DEPLOYMENT.md` for detailed setup instructions.
 - **Privacy**: Use unique room codes and don't share publicly
 - **Song Detection**: Works best with clear audio (avoid heavily compressed streams)
 
-## 🆘 Support
 
-For issues or questions:
-1. Check the Troubleshooting section above
-2. Review browser console for error messages
-3. Ensure you're using a supported browser version
-4. Test on localhost first before deploying
 
 ---
 
-**Built with ❤️ using WebRTC, Node.js, and Socket.io**
+**Built using WebRTC, Node.js, and Socket.io**
 
 Enjoy your AudioParty! 🎉
