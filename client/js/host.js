@@ -5,17 +5,25 @@ let audioContext = null;
 let gainNode = null;
 const peerConnections = new Map(); // Map of listenerId -> RTCPeerConnection
 
-// Gain control
-const hostGainSlider = document.getElementById('host-gain-slider');
-const hostGainValue = document.getElementById('host-gain-value');
+// Gain control - will be initialized after DOM loads
+let hostGainSlider = null;
+let hostGainValue = null;
 
-hostGainSlider.addEventListener('input', (e) => {
-  const gain = e.target.value / 100;
-  if (gainNode) {
-    gainNode.gain.setValueAtTime(gain, audioContext.currentTime);
+// Initialize gain controls when DOM is ready
+function initializeGainControls() {
+  hostGainSlider = document.getElementById('host-gain-slider');
+  hostGainValue = document.getElementById('host-gain-value');
+  
+  if (hostGainSlider && hostGainValue) {
+    hostGainSlider.addEventListener('input', (e) => {
+      const gain = e.target.value / 100;
+      if (gainNode) {
+        gainNode.gain.setValueAtTime(gain, audioContext.currentTime);
+      }
+      hostGainValue.textContent = gain.toFixed(1) + 'x';
+    });
   }
-  hostGainValue.textContent = gain.toFixed(1) + 'x';
-});
+}
 
 // ICE servers configuration - fetched from server
 let iceServers = {
@@ -31,6 +39,9 @@ fetch('/api/ice-servers')
     console.log('Loaded ICE server configuration:', iceServers);
   })
   .catch(err => console.error('Failed to load ICE servers:', err));
+
+// Initialize gain controls
+initializeGainControls();
 
 // Start streaming button
 document.getElementById('start-streaming-btn').addEventListener('click', async () => {
@@ -146,7 +157,7 @@ function applyGainControl(stream) {
   const source = audioContext.createMediaStreamSource(stream);
   
   gainNode = audioContext.createGain();
-  const initialGain = hostGainSlider.value / 100;
+  const initialGain = hostGainSlider ? (hostGainSlider.value / 100) : 1.0;
   gainNode.gain.value = initialGain;
   
   const destination = audioContext.createMediaStreamDestination();
