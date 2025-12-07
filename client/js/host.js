@@ -1,8 +1,8 @@
 // Host functionality - audio capture and streaming
 let localStream = null;
 let processedStream = null;
-let audioContext = null;
-let gainNode = null;
+let hostAudioContext = null;
+let hostGainNode = null;
 const peerConnections = new Map(); // Map of listenerId -> RTCPeerConnection
 
 // Gain control - will be initialized after DOM loads
@@ -17,8 +17,8 @@ function initializeGainControls() {
   if (hostGainSlider && hostGainValue) {
     hostGainSlider.addEventListener('input', (e) => {
       const gain = e.target.value / 100;
-      if (gainNode) {
-        gainNode.gain.setValueAtTime(gain, audioContext.currentTime);
+      if (hostGainNode) {
+        hostGainNode.gain.setValueAtTime(gain, hostAudioContext.currentTime);
       }
       hostGainValue.textContent = gain.toFixed(1) + 'x';
     });
@@ -154,10 +154,10 @@ function stopStreaming() {
   }
 
   // Close audio context
-  if (audioContext) {
-    audioContext.close();
-    audioContext = null;
-    gainNode = null;
+  if (hostAudioContext) {
+    hostAudioContext.close();
+    hostAudioContext = null;
+    hostGainNode = null;
   }
 
   // Stop local stream
@@ -172,16 +172,16 @@ function stopStreaming() {
 }
 
 function applyGainControl(stream) {
-  audioContext = new AudioContext();
-  const source = audioContext.createMediaStreamSource(stream);
+  hostAudioContext = new AudioContext();
+  const source = hostAudioContext.createMediaStreamSource(stream);
   
-  gainNode = audioContext.createGain();
+  hostGainNode = hostAudioContext.createGain();
   const initialGain = hostGainSlider ? (hostGainSlider.value / 100) : 1.0;
-  gainNode.gain.value = initialGain;
+  hostGainNode.gain.value = initialGain;
   
-  const destination = audioContext.createMediaStreamDestination();
-  source.connect(gainNode);
-  gainNode.connect(destination);
+  const destination = hostAudioContext.createMediaStreamDestination();
+  source.connect(hostGainNode);
+  hostGainNode.connect(destination);
   
   console.log('Applied gain control:', initialGain + 'x');
   return destination.stream;
