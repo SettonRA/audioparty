@@ -5,13 +5,13 @@ This feature adds automatic song recognition to AudioParty using ACRCloud's audi
 
 ## Prerequisites
 
-1. **ACRCloud Account**: Already set up with credentials in `.env`
+1. **ACRCloud Account**: Set up with credentials in `.env`
 2. **Node.js Dependencies**: Need to install new packages
-3. **Docker Environment**: Running on Docker01
+3. **Server Environment**: Docker or Node.js runtime
 
 ## Deployment Steps
 
-### 1. On Docker01, navigate to the AudioParty directory
+### 1. Navigate to the AudioParty directory
 ```bash
 cd /path/to/audioparty
 ```
@@ -36,8 +36,8 @@ Copy the `.env` file to the server (already created locally):
 ```bash
 # The .env file should contain:
 ACRCLOUD_HOST=identify-us-west-2.acrcloud.com
-ACRCLOUD_ACCESS_KEY=f787990fb2b3c80dde4ce60432670c95
-ACRCLOUD_ACCESS_SECRET=joqqsMaOZ1qtTkvz7gyfaU1vWIu7ezykhjMvt2Ko
+ACRCLOUD_ACCESS_KEY=Your_access_key
+ACRCLOUD_ACCESS_SECRET=Your_access_secret
 PORT=3000
 ```
 

@@ -6,9 +6,9 @@ This guide shows how to add AudioParty to your existing Nginx Proxy Manager (Pro
 
 ## Prerequisites
 
-- AudioParty VM is running at `192.168.1.111:3000`
-- Access to Nginx Proxy Manager at `https://proxy.tech-ra.net`
-- Wildcard SSL certificate already configured for `*.cineclark.studio` or `*.tech-ra.net`
+- AudioParty is running at `YOUR_SERVER_IP:3000`
+- Access to Nginx Proxy Manager web interface
+- Wildcard SSL certificate configured for your domain
 
 ---
 
@@ -16,17 +16,13 @@ This guide shows how to add AudioParty to your existing Nginx Proxy Manager (Pro
 
 Pick one of these options based on your existing wildcard certificates:
 
-### Option A: cineclark.studio subdomain (Recommended)
-- **Domain:** `party.cineclark.studio`
-- **Uses:** Existing `*.cineclark.studio` wildcard cert
-- **Consistent with:** Your other media services (emby, library, etc.)
+Choose a subdomain for your AudioParty installation:
 
-### Option B: tech-ra.net subdomain
-- **Domain:** `audioparty.tech-ra.net`
-- **Uses:** Existing `*.tech-ra.net` wildcard cert
-- **Consistent with:** Your infrastructure services (proxy, wow, dns)
+- **Example:** `party.yourdomain.com` or `audioparty.yourdomain.com`
+- **Requirement:** Must match your existing wildcard SSL certificate
+- **Recommendation:** Keep it consistent with your other services
 
-**For this guide, we'll use `party.cineclark.studio`**
+**For this guide, we'll use `party.yourdomain.com` as an example**
 
 ---
 
@@ -49,12 +45,12 @@ Fill in the following:
 
 ### Domain Names:
 ```
-party.cineclark.studio
+party.yourdomain.com
 ```
 
 ### Forward Settings:
 - **Scheme:** `http` (AudioParty doesn't have SSL internally)
-- **Forward Hostname / IP:** `192.168.1.111`
+- **Forward Hostname / IP:** `YOUR_SERVER_IP`
 - **Forward Port:** `3000`
 
 ### Options (Check these boxes):
@@ -73,8 +69,8 @@ Leave blank or add custom configuration if needed.
 
 ### SSL Certificate:
 - **SSL Certificate:** Select your existing wildcard certificate
-  - Look for: `*.cineclark.studio` in the dropdown
-  - Should show expiry date: February 17, 2026
+  - Look for: `*.yourdomain.com` in the dropdown
+  - Verify the expiry date is valid
 
 ### SSL Options (Check these boxes):
 - ☑ **Force SSL** - Redirect HTTP to HTTPS
@@ -94,24 +90,24 @@ Leave default unless you have specific requirements.
 ### Test Internal Access:
 From any machine on your network:
 ```bash
-curl -I http://192.168.1.111:3000
+curl -I http://YOUR_SERVER_IP:3000
 ```
 Should return: `200 OK` with HTML content
 
 ### Test Proxy Access (HTTP):
 ```bash
-curl -I http://party.cineclark.studio
+curl -I http://party.yourdomain.com
 ```
 Should redirect to HTTPS (301 or 302)
 
 ### Test Proxy Access (HTTPS):
 ```bash
-curl -I https://party.cineclark.studio
+curl -I https://party.yourdomain.com
 ```
 Should return: `200 OK`
 
 ### Test in Browser:
-1. Navigate to: `https://party.cineclark.studio`
+1. Navigate to: `https://party.yourdomain.com`
 2. You should see the AudioParty landing page
 3. Check browser console (F12) - no errors
 4. SSL certificate should be valid (green lock icon)
@@ -123,7 +119,7 @@ Should return: `200 OK`
 WebSockets are **critical** for AudioParty to function!
 
 ### Browser Test:
-1. Open `https://party.cineclark.studio`
+1. Open `https://party.yourdomain.com`
 2. Open browser Developer Tools (F12)
 3. Go to **Console** tab
 4. Click **"Host a Party"**
@@ -144,24 +140,24 @@ WebSockets are **critical** for AudioParty to function!
 
 If you want external access (outside your home network):
 
-### Internal DNS Only (via PiHole):
-Your PiHole (192.168.1.8) should already resolve `*.cineclark.studio` to Proxy01.
+### Internal DNS:
+If using internal DNS (PiHole, AdGuard, etc.):
 
-If not, add local DNS record in PiHole:
-- Domain: `party.cineclark.studio`
-- IP: `192.168.1.110` (Proxy01)
+- Add local DNS record:
+  - Domain: `party.yourdomain.com`
+  - IP: `YOUR_PROXY_IP`
 
-### External DNS (via Cloudflare):
-1. Login to Cloudflare
-2. Select `cineclark.studio` domain
+### External DNS:
+1. Login to your DNS provider (Cloudflare, Route53, etc.)
+2. Select your domain
 3. Add DNS record:
    - **Type:** `A`
    - **Name:** `party`
-   - **IPv4 address:** `104.37.251.37` (your public IP)
-   - **Proxy status:** ☑ Proxied (orange cloud)
+   - **IPv4 address:** `YOUR_PUBLIC_IP`
+   - **Proxy status:** Proxied (if using Cloudflare)
    - **TTL:** Auto
 
-**Note:** Your router already forwards ports 80/443 to Proxy01 (192.168.1.110)
+**Note:** Ensure your router forwards ports 80/443 to your proxy server
 
 ---
 
@@ -180,8 +176,8 @@ If you want to restrict access to trusted IPs:
    
 4. **Authorization** tab:
    - Add allowed IPs:
-     - `192.168.1.0/24` (your home network)
-     - Or specific IPs of friends
+     - `YOUR_NETWORK/24` (your local network)
+     - Or specific IPs of trusted users
 
 5. **Access** tab:
    - Add any additional restrictions
