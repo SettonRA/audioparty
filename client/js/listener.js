@@ -3,6 +3,8 @@ let peerConnection = null;
 let hostId = null;
 const remoteAudio = document.getElementById('remote-audio');
 let iceCandidateQueue = [];
+let audioContext = null;
+let gainNode = null;
 
 // Volume control
 const volumeSlider = document.getElementById('volume-slider');
@@ -57,7 +59,19 @@ function setupPeerConnection() {
     console.log('Received remote track:', event.track.kind, 'readyState:', event.track.readyState);
     if (event.track.kind === 'audio') {
       console.log('Setting audio srcObject, stream:', event.streams[0].id);
-      remoteAudio.srcObject = event.streams[0];
+      
+      // Apply gain boost to make audio louder
+      audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(event.streams[0]);
+      gainNode = audioContext.createGain();
+      gainNode.gain.value = 2.5; // 2.5x boost (~8dB)
+      
+      const destination = audioContext.createMediaStreamDestination();
+      source.connect(gainNode);
+      gainNode.connect(destination);
+      
+      remoteAudio.srcObject = destination.stream;
+      console.log('Applied 2.5x gain boost to incoming audio');
       
       // Ensure autoplay works
       remoteAudio.play().then(() => {
