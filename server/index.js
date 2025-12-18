@@ -73,6 +73,65 @@ app.get('/api/ice-servers', (req, res) => {
   res.json(iceServers);
 });
 
+// API endpoint to check TURN server status
+app.get('/api/turn-status', async (req, res) => {
+  if (!process.env.TURN_SERVER_URL) {
+    return res.json({ available: false, message: 'TURN server not configured' });
+  }
+  
+  // Extract host and port from TURN URL
+  const turnUrl = process.env.TURN_SERVER_URL;
+  const match = turnUrl.match(/turn:([^:]+):(\d+)/);
+  
+  if (!match) {
+    return res.json({ available: false, message: 'Invalid TURN URL format' });
+  }
+  
+  const [, host, port] = match;
+  
+  // Simple TCP connection test to check if TURN server is reachable
+  const net = require('net');
+  const socket = new net.Socket();
+  const timeout = 3000; // 3 second timeout
+  
+  let isConnected = false;
+  
+  socket.setTimeout(timeout);
+  
+  socket.on('connect', () => {
+    isConnected = true;
+    socket.destroy();
+    res.json({ 
+      available: true, 
+      message: 'TURN server is reachable',
+      server: `${host}:${port}`
+    });
+  });
+  
+  socket.on('timeout', () => {
+    socket.destroy();
+    if (!isConnected) {
+      res.json({ 
+        available: false, 
+        message: 'TURN server connection timeout',
+        server: `${host}:${port}`
+      });
+    }
+  });
+  
+  socket.on('error', (err) => {
+    if (!isConnected) {
+      res.json({ 
+        available: false, 
+        message: `TURN server unreachable: ${err.message}`,
+        server: `${host}:${port}`
+      });
+    }
+  });
+  
+  socket.connect(parseInt(port), host);
+});
+
 // Catch-all route to serve index.html for room codes (enables URL-based room joining)
 // Only match paths that look like room codes (6 alphanumeric characters)
 app.get('/:roomCode([A-Z0-9]{6})', (req, res) => {

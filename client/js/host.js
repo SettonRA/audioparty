@@ -85,6 +85,64 @@ function initHostControls() {
   }
 }
 
+// Check TURN server status
+async function checkTurnStatus() {
+  const statusElement = document.getElementById('turn-status');
+  if (!statusElement) return;
+  
+  try {
+    const response = await fetch('/api/turn-status');
+    const status = await response.json();
+    
+    if (status.available) {
+      statusElement.textContent = '🟢 Relay: Online';
+      statusElement.title = `TURN server (${status.server}) is reachable`;
+      statusElement.style.color = '#4ade80';
+    } else {
+      statusElement.textContent = '🔴 Relay: Offline';
+      statusElement.title = status.message;
+      statusElement.style.color = '#f87171';
+    }
+  } catch (error) {
+    statusElement.textContent = '⚠️ Relay: Error';
+    statusElement.title = 'Failed to check TURN server status';
+    statusElement.style.color = '#fb923c';
+  }
+}
+
+// Check TURN status when host screen is shown
+const hostScreenObserver = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
+    const hostScreen = document.getElementById('host-screen');
+    if (hostScreen && !hostScreen.classList.contains('hidden')) {
+      checkTurnStatus();
+      // Re-check every 30 seconds while hosting
+      const statusInterval = setInterval(() => {
+        if (hostScreen.classList.contains('hidden')) {
+          clearInterval(statusInterval);
+        } else {
+          checkTurnStatus();
+        }
+      }, 30000);
+    }
+  });
+});
+
+// Start observing when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    const hostScreen = document.getElementById('host-screen');
+    if (hostScreen) {
+      hostScreenObserver.observe(hostScreen, { attributes: true, attributeFilter: ['class'] });
+    }
+  });
+} else {
+  const hostScreen = document.getElementById('host-screen');
+  if (hostScreen) {
+    hostScreenObserver.observe(hostScreen, { attributes: true, attributeFilter: ['class'] });
+  }
+}
+
 // Handle server disconnect
 socket.on('disconnect', () => {
   if (localStream) {
