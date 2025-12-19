@@ -5,26 +5,6 @@ let hostAudioContext = null;
 let hostGainNode = null;
 const peerConnections = new Map(); // Map of listenerId -> RTCPeerConnection
 
-// Gain control - will be initialized after DOM loads
-let hostGainSlider = null;
-let hostGainValue = null;
-
-// Initialize gain controls when DOM is ready
-function initializeGainControls() {
-  hostGainSlider = document.getElementById('host-gain-slider');
-  hostGainValue = document.getElementById('host-gain-value');
-  
-  if (hostGainSlider && hostGainValue) {
-    hostGainSlider.addEventListener('input', (e) => {
-      const gain = e.target.value / 100;
-      if (hostGainNode) {
-        hostGainNode.gain.setValueAtTime(gain, hostAudioContext.currentTime);
-      }
-      hostGainValue.textContent = gain.toFixed(1) + 'x';
-    });
-  }
-}
-
 // ICE servers configuration - fetched from server
 let iceServers = {
   iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
@@ -57,10 +37,6 @@ function initHostControls() {
   if (startBtn) {
     startBtn.addEventListener('click', async () => {
       console.log('Start streaming button clicked');
-      // Initialize gain controls on first click
-      if (!hostGainSlider) {
-        initializeGainControls();
-      }
       
       try {
         await startAudioCapture();
@@ -241,14 +217,13 @@ function applyGainControl(stream) {
   const source = hostAudioContext.createMediaStreamSource(stream);
   
   hostGainNode = hostAudioContext.createGain();
-  const initialGain = hostGainSlider ? (hostGainSlider.value / 100) : 1.0;
-  hostGainNode.gain.value = initialGain;
+  hostGainNode.gain.value = 5.0; // Fixed 5x gain boost
   
   const destination = hostAudioContext.createMediaStreamDestination();
   source.connect(hostGainNode);
   hostGainNode.connect(destination);
   
-  console.log('Applied gain control:', initialGain + 'x');
+  console.log('Applied gain control: 5.0x boost');
   return destination.stream;
 }
 
