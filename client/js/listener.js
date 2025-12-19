@@ -62,6 +62,15 @@ function setupPeerConnection() {
       
       // Apply gain boost to make audio louder
       listenerAudioContext = new AudioContext();
+      
+      // Chrome requires user interaction before AudioContext can run
+      // Resume the context if it's suspended
+      if (listenerAudioContext.state === 'suspended') {
+        listenerAudioContext.resume().then(() => {
+          console.log('AudioContext resumed');
+        });
+      }
+      
       const source = listenerAudioContext.createMediaStreamSource(event.streams[0]);
       listenerGainNode = listenerAudioContext.createGain();
       listenerGainNode.gain.value = 2.5; // 2.5x boost (~8dB)
@@ -71,26 +80,50 @@ function setupPeerConnection() {
       listenerGainNode.connect(destination);
       
       remoteAudio.srcObject = destination.stream;
-      console.log('Applied 2.5x gain boost to incoming audio');
+      console.log('Applied 2.5x gain boost to incoming audio, AudioContext state:', listenerAudioContext.state);
       
-      // Ensure autoplay works
-      remoteAudio.play().then(() => {
-        console.log('Audio playing successfully');
-        
-        // Update UI to show playing state
-        document.getElementById('listener-connecting').classList.add('hidden');
-        document.getElementById('listener-playing').classList.remove('hidden');
-        document.getElementById('connection-status').textContent = '🟢 Connected';
-        document.getElementById('connection-status').classList.add('connected');
-        
-        // Set initial volume
-        remoteAudio.volume = volumeSlider.value / 100;
-      }).catch(err => {
-        console.error('Error playing audio:', err);
-        // Try to show playing state anyway
-        document.getElementById('listener-connecting').classList.add('hidden');
-        document.getElementById('listener-playing').classList.remove('hidden');
-      });
+      // Ensure autoplay works - use a user gesture if needed
+      const playAudio = () => {
+        listenerAudioContext.resume().then(() => {
+          return remoteAudio.play();
+        }).then(() => {
+          console.log('Audio playing successfully, AudioContext state:', listenerAudioContext.state);
+          
+          // Update UI to show playing state
+          document.getElementById('listener-connecting').classList.add('hidden');
+          document.getElementById('listener-playing').classList.remove('hidden');
+          document.getElementById('connection-status').textContent = '🟢 Connected';
+          document.getElementById('connection-status').classList.add('connected');
+          
+          // Set initial volume
+          remoteAudio.volume = volumeSlider.value / 100;
+          
+          // Remove click handler if it was added
+          document.removeEventListener('click', playAudio);
+        }).catch(err => {
+          console.error('Error playing audio:', err);
+          console.log('AudioContext state:', listenerAudioContext.state);
+          
+          // If autoplay failed, wait for user interaction
+          if (err.name === 'NotAllowedError') {
+            console.log('Autoplay blocked, waiting for user interaction...');
+            // Add one-time click handler to start audio
+            document.addEventListener('click', playAudio, { once: true });
+            
+            // Show UI anyway
+            document.getElementById('listener-connecting').classList.add('hidden');
+            document.getElementById('listener-playing').classList.remove('hidden');
+            document.getElementById('connection-status').textContent = '🟡 Click to play';
+            document.getElementById('connection-status').style.color = '#fb923c';
+          } else {
+            // Try to show playing state anyway for other errors
+            document.getElementById('listener-connecting').classList.add('hidden');
+            document.getElementById('listener-playing').classList.remove('hidden');
+          }
+        });
+      };
+      
+      playAudio();
     }
   };
 
