@@ -123,35 +123,6 @@ function setupPeerConnection() {
       startPlayback();
     }
   };
-                }
-                await remoteAudio.play();
-                console.log('Audio started after user interaction');
-                
-                document.getElementById('connection-status').textContent = '🟢 Connected';
-                document.getElementById('connection-status').classList.add('connected');
-                document.getElementById('connection-status').style.color = '';
-                
-                remoteAudio.volume = volumeSlider.value / 100;
-                
-                document.removeEventListener('click', activateAudio);
-              } catch (retryErr) {
-                console.error('Failed to start audio after user interaction:', retryErr);
-              }
-            };
-            
-            document.addEventListener('click', activateAudio, { once: true });
-          } else {
-            // For other errors, still show the UI
-            document.getElementById('listener-connecting').classList.add('hidden');
-            document.getElementById('listener-playing').classList.remove('hidden');
-          }
-        }
-      };
-      
-      // Start playback
-      startPlayback();
-    }
-  };
 
   // Handle ICE candidates
   peerConnection.onicecandidate = (event) => {
