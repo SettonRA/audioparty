@@ -60,34 +60,47 @@ function setupPeerConnection() {
     if (event.track.kind === 'audio') {
       console.log('Setting audio srcObject, stream:', event.streams[0].id);
       
-      // Apply gain boost to make audio louder
-      listenerAudioContext = new AudioContext();
+      let audioStream = event.streams[0];
+      let usingGainBoost = false;
       
-      // Chrome requires user interaction before AudioContext can run
-      // Resume the context if it's suspended
-      if (listenerAudioContext.state === 'suspended') {
-        listenerAudioContext.resume().then(() => {
-          console.log('AudioContext resumed');
-        });
+      // Try to apply gain boost - fallback to direct stream if it fails
+      try {
+        listenerAudioContext = new AudioContext();
+        console.log('AudioContext created, state:', listenerAudioContext.state);
+        
+        const source = listenerAudioContext.createMediaStreamSource(event.streams[0]);
+        listenerGainNode = listenerAudioContext.createGain();
+        listenerGainNode.gain.value = 2.5; // 2.5x boost (~8dB)
+        
+        const destination = listenerAudioContext.createMediaStreamDestination();
+        source.connect(listenerGainNode);
+        listenerGainNode.connect(destination);
+        
+        audioStream = destination.stream;
+        usingGainBoost = true;
+        console.log('Applied 2.5x gain boost to incoming audio');
+      } catch (err) {
+        console.warn('Failed to apply gain boost, using direct audio stream:', err);
+        audioStream = event.streams[0];
+        usingGainBoost = false;
       }
       
-      const source = listenerAudioContext.createMediaStreamSource(event.streams[0]);
-      listenerGainNode = listenerAudioContext.createGain();
-      listenerGainNode.gain.value = 2.5; // 2.5x boost (~8dB)
+      remoteAudio.srcObject = audioStream;
       
-      const destination = listenerAudioContext.createMediaStreamDestination();
-      source.connect(listenerGainNode);
-      listenerGainNode.connect(destination);
-      
-      remoteAudio.srcObject = destination.stream;
-      console.log('Applied 2.5x gain boost to incoming audio, AudioContext state:', listenerAudioContext.state);
-      
-      // Ensure autoplay works - use a user gesture if needed
-      const playAudio = () => {
-        listenerAudioContext.resume().then(() => {
-          return remoteAudio.play();
-        }).then(() => {
-          console.log('Audio playing successfully, AudioContext state:', listenerAudioContext.state);
+      // Function to start audio playback
+      const startPlayback = async () => {
+        try {
+          // Resume AudioContext if we're using gain boost
+          if (usingGainBoost && listenerAudioContext) {
+            if (listenerAudioContext.state === 'suspended') {
+              await listenerAudioContext.resume();
+              console.log('AudioContext resumed, state:', listenerAudioContext.state);
+            }
+          }
+          
+          // Attempt to play
+          await remoteAudio.play();
+          console.log('Audio playing successfully');
           
           // Update UI to show playing state
           document.getElementById('listener-connecting').classList.add('hidden');
@@ -98,32 +111,50 @@ function setupPeerConnection() {
           // Set initial volume
           remoteAudio.volume = volumeSlider.value / 100;
           
-          // Remove click handler if it was added
-          document.removeEventListener('click', playAudio);
-        }).catch(err => {
+        } catch (err) {
           console.error('Error playing audio:', err);
-          console.log('AudioContext state:', listenerAudioContext.state);
           
-          // If autoplay failed, wait for user interaction
           if (err.name === 'NotAllowedError') {
-            console.log('Autoplay blocked, waiting for user interaction...');
-            // Add one-time click handler to start audio
-            document.addEventListener('click', playAudio, { once: true });
+            console.log('Autoplay blocked by browser, waiting for user interaction...');
             
-            // Show UI anyway
+            // Update UI to indicate click needed
             document.getElementById('listener-connecting').classList.add('hidden');
             document.getElementById('listener-playing').classList.remove('hidden');
-            document.getElementById('connection-status').textContent = '🟡 Click to play';
+            document.getElementById('connection-status').textContent = '🟡 Click to unmute';
             document.getElementById('connection-status').style.color = '#fb923c';
+            
+            // Add click handler to entire document for easier activation
+            const activateAudio = async () => {
+              try {
+                if (usingGainBoost && listenerAudioContext && listenerAudioContext.state === 'suspended') {
+                  await listenerAudioContext.resume();
+                }
+                await remoteAudio.play();
+                console.log('Audio started after user interaction');
+                
+                document.getElementById('connection-status').textContent = '🟢 Connected';
+                document.getElementById('connection-status').classList.add('connected');
+                document.getElementById('connection-status').style.color = '';
+                
+                remoteAudio.volume = volumeSlider.value / 100;
+                
+                document.removeEventListener('click', activateAudio);
+              } catch (retryErr) {
+                console.error('Failed to start audio after user interaction:', retryErr);
+              }
+            };
+            
+            document.addEventListener('click', activateAudio, { once: true });
           } else {
-            // Try to show playing state anyway for other errors
+            // For other errors, still show the UI
             document.getElementById('listener-connecting').classList.add('hidden');
             document.getElementById('listener-playing').classList.remove('hidden');
           }
-        });
+        }
       };
       
-      playAudio();
+      // Start playback
+      startPlayback();
     }
   };
 
