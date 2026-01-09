@@ -223,7 +223,10 @@ app.get('/', (req, res) => {
 // Song recognition endpoint
 app.post('/api/identify-song', async (req, res) => {
   try {
+    console.log('Song identification request received');
+    
     if (!acrCloudService.isConfigured()) {
+      console.log('ACRCloud not configured');
       return res.status(503).json({
         success: false,
         error: 'Song recognition not configured'
@@ -233,17 +236,23 @@ app.post('/api/identify-song', async (req, res) => {
     const { audioData } = req.body;
     
     if (!audioData) {
+      console.log('No audio data in request');
       return res.status(400).json({
         success: false,
         error: 'No audio data provided'
       });
     }
 
+    console.log(`Received audio data, size: ${audioData.length} bytes (base64)`);
+
     // Convert base64 audio data to buffer
     const audioBuffer = Buffer.from(audioData, 'base64');
+    console.log(`Audio buffer size: ${audioBuffer.length} bytes`);
     
     // Identify the song
+    console.log('Sending to ACRCloud...');
     const result = await acrCloudService.identify(audioBuffer);
+    console.log('ACRCloud result:', JSON.stringify(result, null, 2));
     
     res.json(result);
   } catch (error) {
