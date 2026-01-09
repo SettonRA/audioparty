@@ -249,6 +249,20 @@ socket.on('listener-left', (data) => {
   }
 });
 
+// Handle session ended by admin
+socket.on('host-disconnected', (data) => {
+  console.log('Session ended by admin:', data);
+  
+  // Stop streaming
+  stopStreaming();
+  
+  // Show error message
+  alert('Your session was ended by an administrator.');
+  
+  // Return to home
+  window.location.href = '/';
+});
+
 async function createPeerConnection(listenerId) {
   const pc = new RTCPeerConnection(iceServers);
   peerConnections.set(listenerId, pc);
