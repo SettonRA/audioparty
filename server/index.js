@@ -256,42 +256,6 @@ app.post('/api/identify-song', async (req, res) => {
   }
 });
 
-// Song recognition endpoint
-app.post('/api/identify-song', async (req, res) => {
-  try {
-    if (!acrCloudService.isConfigured()) {
-      return res.status(503).json({
-        success: false,
-        error: 'Song recognition not configured'
-      });
-    }
-
-    const { audioData } = req.body;
-    
-    if (!audioData) {
-      return res.status(400).json({
-        success: false,
-        error: 'No audio data provided'
-      });
-    }
-
-    // Convert base64 audio data to buffer
-    const audioBuffer = Buffer.from(audioData, 'base64');
-    
-    // Identify the song
-    const result = await acrCloudService.identify(audioBuffer);
-    
-    res.json(result);
-  } catch (error) {
-    console.error('Song identification error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Internal server error',
-      message: error.message
-    });
-  }
-});
-
 // Socket.io connection handling
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
