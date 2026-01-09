@@ -10,7 +10,8 @@ class RoomManager {
       hostId: hostId,
       participants: [hostId],
       createdAt: Date.now(),
-      discordSharingEnabled: false
+      discordSharingEnabled: false,
+      currentSong: null
     };
     this.rooms.set(roomId, room);
     return room;
@@ -52,6 +53,18 @@ class RoomManager {
 
   deleteRoom(roomId) {
     return this.rooms.delete(roomId);
+  }
+
+  updateCurrentSong(roomId, song) {
+    const room = this.rooms.get(roomId);
+    if (room) {
+      room.currentSong = song;
+    }
+    return room;
+  }
+
+  getAllRooms() {
+    return Array.from(this.rooms.values());
   }
 
   generateRoomId() {

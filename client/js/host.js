@@ -217,7 +217,7 @@ function applyGainControl(stream) {
   const source = hostAudioContext.createMediaStreamSource(stream);
   
   hostGainNode = hostAudioContext.createGain();
-  hostGainNode.gain.value = 5.0; // Fixed 5x gain boost
+  hostGainNode.gain.value = 3.0; // Fixed 3x gain boost
   
   const destination = hostAudioContext.createMediaStreamDestination();
   source.connect(hostGainNode);

@@ -41,6 +41,83 @@ app.use((req, res, next) => {
 // Serve static files from client directory
 app.use(express.static(path.join(__dirname, '../client')));
 
+// Basic auth middleware for admin panel
+const basicAuth = (req, res, next) => {
+  const adminUsername = process.env.ADMIN_USERNAME;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  // If credentials are not configured, allow access without auth
+  if (!adminUsername || !adminPassword) {
+    return next();
+  }
+
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Basic ')) {
+    res.setHeader('WWW-Authenticate', 'Basic realm="AudioParty Admin"');
+    return res.status(401).send('Authentication required');
+  }
+
+  const base64Credentials = authHeader.split(' ')[1];
+  const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
+  const [username, password] = credentials.split(':');
+
+  if (username === adminUsername && password === adminPassword) {
+    return next();
+  }
+
+  res.setHeader('WWW-Authenticate', 'Basic realm="AudioParty Admin"');
+  return res.status(401).send('Invalid credentials');
+};
+
+// Admin panel route
+app.get('/admin', basicAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/admin.html'));
+});
+
+// Admin API: Get all active sessions
+app.get('/api/admin/sessions', basicAuth, (req, res) => {
+  const rooms = roomManager.getAllRooms();
+  const sessions = rooms.map(room => ({
+    roomId: room.id,
+    hostId: room.hostId,
+    participantCount: room.participants.length,
+    currentSong: room.currentSong,
+    createdAt: room.createdAt,
+    discordSharing: room.discordSharingEnabled
+  }));
+  res.json({ sessions });
+});
+
+// Admin API: End a session
+app.post('/api/admin/end-session', basicAuth, (req, res) => {
+  const { roomId } = req.body;
+  
+  if (!roomId) {
+    return res.status(400).json({ success: false, error: 'Room ID required' });
+  }
+
+  const room = roomManager.getRoom(roomId);
+  
+  if (!room) {
+    return res.status(404).json({ success: false, error: 'Room not found' });
+  }
+
+  // Notify all participants that the room is being closed
+  io.to(roomId).emit('host-disconnected', { reason: 'Session ended by admin' });
+  
+  // Update Discord if sharing was enabled
+  if (room.discordSharingEnabled) {
+    discordService.partyEnded(room.id);
+  }
+  
+  // Delete the room
+  roomManager.deleteRoom(roomId);
+  
+  console.log(`Room ${roomId} ended by admin`);
+  res.json({ success: true, message: 'Session ended successfully' });
+});
+
 // API endpoint to get ICE server configuration
 app.get('/api/ice-servers', (req, res) => {
   const iceServers = {
@@ -317,6 +394,9 @@ io.on('connection', (socket) => {
   socket.on('song-detected', (data) => {
     const { roomId, song } = data;
     console.log(`Song detected in room ${roomId}:`, song.title, '-', song.artist);
+    
+    // Update room's current song
+    roomManager.updateCurrentSong(roomId, song);
     
     // Broadcast to all participants in the room (including host)
     io.to(roomId).emit('song-update', {
