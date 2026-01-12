@@ -139,8 +139,12 @@ function setupPeerConnection() {
       document.getElementById('listener-status-text').textContent = 'Receiving Video & Audio';
       document.getElementById('listener-info-text').textContent = '🎬 Watching the host\'s video stream';
       
-      // Hide song display in video mode
+      // Hide song display and audio slider in video mode
       document.getElementById('listener-song-display').classList.add('hidden');
+      document.querySelector('.audio-controls').classList.add('hidden');
+      
+      // Setup video controls
+      setupVideoControls();
       
       // Auto-play video
       videoElement.play().catch(err => console.log('Video autoplay prevented:', err));
@@ -319,4 +323,50 @@ if (typeof escapeHtml === 'undefined') {
     };
     return text.replace(/[&<>"']/g, m => map[m]);
   }
+}
+
+// Setup video controls for theater and fullscreen modes
+function setupVideoControls() {
+  const videoContainer = document.getElementById('listener-video-container');
+  const videoElement = document.getElementById('listener-video');
+  const theaterBtn = document.getElementById('theater-mode-btn');
+  const fullscreenBtn = document.getElementById('fullscreen-btn');
+  let isTheaterMode = false;
+  
+  // Theater mode - fills browser window
+  theaterBtn.addEventListener('click', () => {
+    isTheaterMode = !isTheaterMode;
+    
+    if (isTheaterMode) {
+      videoContainer.classList.add('theater-mode');
+      theaterBtn.textContent = '📺';
+      theaterBtn.title = 'Exit Theater Mode';
+    } else {
+      videoContainer.classList.remove('theater-mode');
+      theaterBtn.textContent = '📺';
+      theaterBtn.title = 'Theater Mode';
+    }
+  });
+  
+  // Fullscreen mode - native OS fullscreen
+  fullscreenBtn.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      videoContainer.requestFullscreen().catch(err => {
+        console.log('Fullscreen error:', err);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  });
+  
+  // Update fullscreen button on fullscreen change
+  document.addEventListener('fullscreenchange', () => {
+    if (document.fullscreenElement) {
+      fullscreenBtn.textContent = '⛶';
+      fullscreenBtn.title = 'Exit Fullscreen';
+    } else {
+      fullscreenBtn.textContent = '⛶';
+      fullscreenBtn.title = 'Fullscreen';
+    }
+  });
 }
