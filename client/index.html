@@ -20,6 +20,16 @@
                 <button id="join-btn" class="secondary-btn">Join a Party</button>
             </div>
             
+            <!-- Host Type Selection -->
+            <div id="host-type-selection" class="hidden">
+                <h3>Choose Party Type:</h3>
+                <div class="button-group">
+                    <button id="host-audio-btn" class="primary-btn">🎵 Audio Party</button>
+                    <button id="host-video-btn" class="primary-btn">🎬 Video Party</button>
+                </div>
+                <button id="host-type-cancel-btn" class="text-btn">Cancel</button>
+            </div>
+            
             <div id="join-form" class="hidden">
                 <input type="text" id="room-code-input" placeholder="Enter room code (e.g., ABC123)" maxlength="6">
                 <button id="join-submit-btn" class="primary-btn">Join</button>
@@ -82,17 +92,22 @@
             </div>
 
             <div id="host-setup" class="setup-panel">
-                <h2>Start Your Party</h2>
-                <p class="instruction">Click below to share a browser tab with audio (Spotify, YouTube, etc.)</p>
-                <button id="start-streaming-btn" class="primary-btn large">Share Audio Tab</button>
-                <p class="hint">💡 Make sure to check "Share audio" in the browser dialog</p>
+                <h2 id="host-setup-title">Start Your Party</h2>
+                <p class="instruction" id="host-setup-instruction">Click below to share a browser tab with audio (Spotify, YouTube, etc.)</p>
+                <button id="start-streaming-btn" class="primary-btn large" data-mode="audio">Share Audio Tab</button>
+                <p class="hint" id="host-setup-hint">💡 Make sure to check "Share audio" in the browser dialog</p>
                 <button id="cancel-host-btn" class="secondary-btn">Cancel</button>
             </div>
 
             <div id="host-streaming" class="streaming-panel hidden">
                 <div class="status-indicator">
                     <span class="pulse"></span>
-                    <span>Streaming Audio</span>
+                    <span id="streaming-status-text">Streaming Audio</span>
+                </div>
+
+                <!-- Video container for video party mode -->
+                <div id="host-video-container" class="video-container hidden">
+                    <video id="host-video-preview" autoplay muted playsinline></video>
                 </div>
 
                 <!-- Current Song Display -->
@@ -129,7 +144,12 @@
             <div id="listener-playing" class="streaming-panel hidden">
                 <div class="status-indicator">
                     <span class="pulse"></span>
-                    <span>Receiving Audio</span>
+                    <span id="listener-status-text">Receiving Audio</span>
+                </div>
+
+                <!-- Video container for video party mode -->
+                <div id="listener-video-container" class="video-container hidden">
+                    <video id="listener-video" autoplay playsinline></video>
                 </div>
 
                 <!-- Current Song Display for Listeners -->
@@ -146,7 +166,7 @@
                 </div>
 
                 <div class="info-message">
-                    <p>🎧 Listening to the host's audio stream</p>
+                    <p id="listener-info-text">🎧 Listening to the host's audio stream</p>
                 </div>
 
                 <button id="leave-party-btn" class="secondary-btn">Leave Party</button>

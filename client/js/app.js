@@ -8,6 +8,7 @@ const screens = {
 };
 
 let currentMode = null; // 'host' or 'listener'
+let partyMode = 'audio'; // 'audio' or 'video'
 let pendingRoomCode = null;
 let currentRoomCode = null;
 let currentShareLink = null;
@@ -46,9 +47,32 @@ socket.on('connect', () => {
 
 // Landing screen controls
 document.getElementById('host-btn').addEventListener('click', () => {
+  // Show host type selection
+  document.getElementById('host-type-selection').classList.remove('hidden');
+  document.getElementById('host-btn').disabled = true;
+  document.getElementById('join-btn').disabled = true;
+});
+
+document.getElementById('host-audio-btn').addEventListener('click', () => {
+  partyMode = 'audio';
   currentMode = 'host';
   showScreen('host');
+  setupHostUI('audio');
   createRoom();
+});
+
+document.getElementById('host-video-btn').addEventListener('click', () => {
+  partyMode = 'video';
+  currentMode = 'host';
+  showScreen('host');
+  setupHostUI('video');
+  createRoom();
+});
+
+document.getElementById('host-type-cancel-btn').addEventListener('click', () => {
+  document.getElementById('host-type-selection').classList.add('hidden');
+  document.getElementById('host-btn').disabled = false;
+  document.getElementById('join-btn').disabled = false;
 });
 
 document.getElementById('join-btn').addEventListener('click', () => {
@@ -101,6 +125,27 @@ document.getElementById('close-troubleshooting-btn').addEventListener('click', (
 function showScreen(screenName) {
   Object.values(screens).forEach(screen => screen.classList.remove('active'));
   screens[screenName].classList.add('active');
+}
+
+function setupHostUI(mode) {
+  const title = document.getElementById('host-setup-title');
+  const instruction = document.getElementById('host-setup-instruction');
+  const button = document.getElementById('start-streaming-btn');
+  const hint = document.getElementById('host-setup-hint');
+  
+  if (mode === 'video') {
+    title.textContent = 'Start Your Video Party';
+    instruction.textContent = 'Click below to share a browser tab with video and audio';
+    button.textContent = 'Share Video Tab';
+    button.dataset.mode = 'video';
+    hint.textContent = '💡 Make sure to check "Share audio" and select the tab with video';
+  } else {
+    title.textContent = 'Start Your Party';
+    instruction.textContent = 'Click below to share a browser tab with audio (Spotify, YouTube, etc.)';
+    button.textContent = 'Share Audio Tab';
+    button.dataset.mode = 'audio';
+    hint.textContent = '💡 Make sure to check "Share audio" in the browser dialog';
+  }
 }
 
 function createRoom() {

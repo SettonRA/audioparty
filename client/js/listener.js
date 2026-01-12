@@ -54,9 +54,10 @@ function setupPeerConnection() {
     console.log('Connection state:', peerConnection.connectionState);
   };
 
-  // Handle incoming audio track
+  // Handle incoming tracks (audio and video)
   peerConnection.ontrack = (event) => {
     console.log('Received remote track:', event.track.kind, 'readyState:', event.track.readyState);
+    
     if (event.track.kind === 'audio') {
       console.log('Setting audio srcObject, stream:', event.streams[0].id);
       
@@ -121,6 +122,27 @@ function setupPeerConnection() {
       
       // Start playback
       startPlayback();
+    } else if (event.track.kind === 'video') {
+      console.log('Received video track');
+      
+      // Display video
+      const videoElement = document.getElementById('listener-video');
+      const videoContainer = document.getElementById('listener-video-container');
+      
+      if (!videoElement.srcObject) {
+        videoElement.srcObject = event.streams[0];
+      }
+      
+      videoContainer.classList.remove('hidden');
+      
+      // Update status text
+      document.getElementById('listener-status-text').textContent = 'Receiving Video & Audio';
+      document.getElementById('listener-info-text').textContent = '🎬 Watching the host\'s video stream';
+      
+      // Auto-play video
+      videoElement.play().catch(err => console.log('Video autoplay prevented:', err));
+      
+      console.log('Video track configured');
     }
   };
 

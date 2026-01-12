@@ -311,6 +311,33 @@ input[type="text"]:focus {
   display: none !important;
 }
 
+/* Video Container */
+.video-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 20px 0;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.video-container video {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-height: 60vh;
+  object-fit: contain;
+}
+
+#host-video-preview {
+  max-height: 30vh;
+}
+
+#listener-video {
+  max-height: 60vh;
+}
+
 /* Status Indicator */
 .status-indicator {
   display: flex;
