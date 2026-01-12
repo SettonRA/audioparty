@@ -166,6 +166,9 @@ async function startAudioCapture() {
       // Update status text
       document.getElementById('streaming-status-text').textContent = 'Streaming Video & Audio';
       
+      // Hide song display in video mode
+      document.getElementById('current-song-display').classList.add('hidden');
+      
       console.log('Video track enabled:', videoTracks[0].label);
     } else {
       // Stop video tracks if audio-only mode

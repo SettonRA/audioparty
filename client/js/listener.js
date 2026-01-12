@@ -139,6 +139,9 @@ function setupPeerConnection() {
       document.getElementById('listener-status-text').textContent = 'Receiving Video & Audio';
       document.getElementById('listener-info-text').textContent = '🎬 Watching the host\'s video stream';
       
+      // Hide song display in video mode
+      document.getElementById('listener-song-display').classList.add('hidden');
+      
       // Auto-play video
       videoElement.play().catch(err => console.log('Video autoplay prevented:', err));
       
