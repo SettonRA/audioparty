@@ -329,9 +329,23 @@ if (typeof escapeHtml === 'undefined') {
 function setupVideoControls() {
   const videoContainer = document.getElementById('listener-video-container');
   const videoElement = document.getElementById('listener-video');
+  const remoteAudio = document.getElementById('remote-audio');
   const theaterBtn = document.getElementById('theater-mode-btn');
-  const fullscreenBtn = document.getElementById('fullscreen-btn');
   let isTheaterMode = false;
+  
+  // Sync video volume with remote audio element
+  videoElement.addEventListener('volumechange', () => {
+    if (remoteAudio) {
+      remoteAudio.volume = videoElement.volume;
+      remoteAudio.muted = videoElement.muted;
+      console.log('Synced audio volume:', videoElement.volume, 'muted:', videoElement.muted);
+    }
+  });
+  
+  // Set initial video volume to match remote audio
+  if (remoteAudio && remoteAudio.volume !== undefined) {
+    videoElement.volume = remoteAudio.volume;
+  }
   
   // Theater mode - fills browser window
   theaterBtn.addEventListener('click', () => {
@@ -345,28 +359,6 @@ function setupVideoControls() {
       videoContainer.classList.remove('theater-mode');
       theaterBtn.textContent = '📺';
       theaterBtn.title = 'Theater Mode';
-    }
-  });
-  
-  // Fullscreen mode - native OS fullscreen
-  fullscreenBtn.addEventListener('click', () => {
-    if (!document.fullscreenElement) {
-      videoContainer.requestFullscreen().catch(err => {
-        console.log('Fullscreen error:', err);
-      });
-    } else {
-      document.exitFullscreen();
-    }
-  });
-  
-  // Update fullscreen button on fullscreen change
-  document.addEventListener('fullscreenchange', () => {
-    if (document.fullscreenElement) {
-      fullscreenBtn.textContent = '⛶';
-      fullscreenBtn.title = 'Exit Fullscreen';
-    } else {
-      fullscreenBtn.textContent = '⛶';
-      fullscreenBtn.title = 'Fullscreen';
     }
   });
 }
