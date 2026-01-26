@@ -134,8 +134,7 @@ class DiscordService {
         .setColor(0xFF0000) // Red
         .setTitle('🎵 AudioParty - Ended')
         .setDescription('The party has ended. Thanks for listening!')
-        .setTimestamp()
-        .setFooter({ text: `Room Code: ${roomCode}` });
+        .setTimestamp();
 
       await message.edit({ embeds: [embed], components: [] });
       this.currentMessageId = null;
