@@ -339,6 +339,19 @@ input[type="text"]:focus {
 .desktop-download-text strong { font-size: 0.95rem; }
 .desktop-download-text span   { font-size: 0.8rem; color: var(--text-secondary); }
 .desktop-download-arrow { color: var(--text-secondary); font-size: 1.1rem; flex-shrink: 0; }
+.beta-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 4px;
+  padding: 1px 5px;
+  vertical-align: middle;
+  margin-left: 6px;
+}
 
 /* Status Indicator */
 .status-indicator {
