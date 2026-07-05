@@ -11,10 +11,21 @@
   "build": {
     "appId": "studio.cineclark.audioparty",
     "productName": "AudioParty",
+    "icon": "../client/favicon.png",
     "win": {
       "target": [
-        { "target": "nsis", "arch": ["x64"] },
-        { "target": "portable", "arch": ["x64"] }
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
       ]
     },
     "nsis": {
@@ -40,5 +51,8 @@
   "devDependencies": {
     "electron": "^31.0.0",
     "electron-builder": "^25.0.0"
+  },
+  "allowScripts": {
+    "electron@31.7.7": true
   }
 }

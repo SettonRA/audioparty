@@ -6,9 +6,9 @@ const path = require('path');
 function createWindow() {
   const win = new BrowserWindow({
     width: 720,
-    height: 640,
+    height: 900,
     minWidth: 500,
-    minHeight: 520,
+    minHeight: 700,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -16,6 +16,7 @@ function createWindow() {
       webSecurity: true
     },
     title: 'AudioParty',
+    icon: path.join(__dirname, '..', 'client', 'favicon.png'),
     backgroundColor: '#0f172a',
     show: false
   });
