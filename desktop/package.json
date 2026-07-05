@@ -11,7 +11,7 @@
   "build": {
     "appId": "studio.cineclark.audioparty",
     "productName": "AudioParty",
-    "icon": "../client/favicon.png",
+    "icon": "renderer/assets/favicon.png",
     "win": {
       "target": [
         {

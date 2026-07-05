@@ -16,7 +16,7 @@ function createWindow() {
       webSecurity: true
     },
     title: 'AudioParty',
-    icon: path.join(__dirname, '..', 'client', 'favicon.png'),
+    icon: path.join(__dirname, 'renderer', 'assets', 'favicon.png'),
     backgroundColor: '#0f172a',
     show: false
   });
