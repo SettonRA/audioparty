@@ -20,15 +20,6 @@
                 <button id="join-btn" class="secondary-btn">Join a Party</button>
             </div>
             
-            <!-- Host Type Selection -->
-            <div id="host-type-selection" class="hidden">
-                <h3>Choose Party Type:</h3>
-                <div class="button-group">
-                    <button id="host-audio-btn" class="primary-btn">🎵 Audio Party</button>
-                    <button id="host-video-btn" class="primary-btn">🎬 Video Party</button>
-                </div>
-                <button id="host-type-cancel-btn" class="text-btn">Cancel</button>
-            </div>
             
             <div id="join-form" class="hidden">
                 <input type="text" id="room-code-input" placeholder="Enter room code (e.g., ABC123)" maxlength="6">
@@ -105,11 +96,6 @@
                     <span id="streaming-status-text">Streaming Audio</span>
                 </div>
 
-                <!-- Video container for video party mode -->
-                <div id="host-video-container" class="video-container hidden">
-                    <video id="host-video-preview" autoplay muted playsinline></video>
-                </div>
-
                 <!-- Current Song Display -->
                 <div id="current-song-display" class="song-display">
                     <div class="song-info">
@@ -145,14 +131,6 @@
                 <div class="status-indicator">
                     <span class="pulse"></span>
                     <span id="listener-status-text">Receiving Audio</span>
-                </div>
-
-                <!-- Video container for video party mode -->
-                <div id="listener-video-container" class="video-container hidden">
-                    <video id="listener-video" autoplay playsinline controls></video>
-                    <div class="video-controls-overlay">
-                        <button id="theater-mode-btn" class="video-control-btn" title="Theater Mode">📺</button>
-                    </div>
                 </div>
 
                 <!-- Current Song Display for Listeners -->

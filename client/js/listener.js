@@ -122,34 +122,6 @@ function setupPeerConnection() {
       
       // Start playback
       startPlayback();
-    } else if (event.track.kind === 'video') {
-      console.log('Received video track');
-      
-      // Display video
-      const videoElement = document.getElementById('listener-video');
-      const videoContainer = document.getElementById('listener-video-container');
-      
-      if (!videoElement.srcObject) {
-        videoElement.srcObject = event.streams[0];
-      }
-      
-      videoContainer.classList.remove('hidden');
-      
-      // Update status text
-      document.getElementById('listener-status-text').textContent = 'Receiving Video & Audio';
-      document.getElementById('listener-info-text').textContent = '🎬 Watching the host\'s video stream';
-      
-      // Hide song display and audio slider in video mode
-      document.getElementById('listener-song-display').classList.add('hidden');
-      document.querySelector('.audio-controls').classList.add('hidden');
-      
-      // Setup video controls
-      setupVideoControls();
-      
-      // Auto-play video
-      videoElement.play().catch(err => console.log('Video autoplay prevented:', err));
-      
-      console.log('Video track configured');
     }
   };
 
@@ -325,40 +297,3 @@ if (typeof escapeHtml === 'undefined') {
   }
 }
 
-// Setup video controls for theater and fullscreen modes
-function setupVideoControls() {
-  const videoContainer = document.getElementById('listener-video-container');
-  const videoElement = document.getElementById('listener-video');
-  const remoteAudio = document.getElementById('remote-audio');
-  const theaterBtn = document.getElementById('theater-mode-btn');
-  let isTheaterMode = false;
-  
-  // Sync video volume with remote audio element
-  videoElement.addEventListener('volumechange', () => {
-    if (remoteAudio) {
-      remoteAudio.volume = videoElement.volume;
-      remoteAudio.muted = videoElement.muted;
-      console.log('Synced audio volume:', videoElement.volume, 'muted:', videoElement.muted);
-    }
-  });
-  
-  // Set initial video volume to match remote audio
-  if (remoteAudio && remoteAudio.volume !== undefined) {
-    videoElement.volume = remoteAudio.volume;
-  }
-  
-  // Theater mode - fills browser window
-  theaterBtn.addEventListener('click', () => {
-    isTheaterMode = !isTheaterMode;
-    
-    if (isTheaterMode) {
-      videoContainer.classList.add('theater-mode');
-      theaterBtn.textContent = '📺';
-      theaterBtn.title = 'Exit Theater Mode';
-    } else {
-      videoContainer.classList.remove('theater-mode');
-      theaterBtn.textContent = '📺';
-      theaterBtn.title = 'Theater Mode';
-    }
-  });
-}

@@ -130,12 +130,10 @@ socket.on('disconnect', () => {
 });
 
 async function startAudioCapture() {
-  const mode = document.getElementById('start-streaming-btn').dataset.mode || 'audio';
-  
   try {
-    // Request screen/tab sharing with audio (and video if video mode)
+    // Request screen/tab sharing with audio
     localStream = await navigator.mediaDevices.getDisplayMedia({
-      video: true, // Always capture video track
+      video: true, // Required by getDisplayMedia API, but we stop the track
       audio: {
         echoCancellation: false,
         noiseSuppression: false,
@@ -154,26 +152,8 @@ async function startAudioCapture() {
 
     console.log('Audio capture started:', audioTracks[0].label);
 
-    // Handle video tracks based on mode
-    const videoTracks = localStream.getVideoTracks();
-    if (mode === 'video' && videoTracks.length > 0) {
-      // Show video preview for host
-      const videoPreview = document.getElementById('host-video-preview');
-      const videoContainer = document.getElementById('host-video-container');
-      videoPreview.srcObject = localStream;
-      videoContainer.classList.remove('hidden');
-      
-      // Update status text
-      document.getElementById('streaming-status-text').textContent = 'Streaming Video & Audio';
-      
-      // Hide song display in video mode
-      document.getElementById('current-song-display').classList.add('hidden');
-      
-      console.log('Video track enabled:', videoTracks[0].label);
-    } else {
-      // Stop video tracks if audio-only mode
-      videoTracks.forEach(track => track.stop());
-    }
+    // Stop video tracks - audio only mode
+    localStream.getVideoTracks().forEach(track => track.stop());
 
     // Apply gain control to audio
     processedStream = applyGainControl(localStream);
@@ -182,8 +162,8 @@ async function startAudioCapture() {
     document.getElementById('host-setup').classList.add('hidden');
     document.getElementById('host-streaming').classList.remove('hidden');
 
-    // Initialize song detection (audio only)
-    if (typeof initializeSongDetection === 'function' && mode === 'audio') {
+    // Initialize song detection
+    if (typeof initializeSongDetection === 'function') {
       initializeSongDetection(localStream);
     }
 
@@ -316,24 +296,6 @@ async function createPeerConnection(listenerId) {
     params.encodings[0].networkPriority = 'high';
     sender.setParameters(params).catch(err => console.log('Failed to set encoding params:', err));
   });
-
-  // Add video tracks if in video mode
-  if (partyMode === 'video') {
-    const videoTracks = localStream.getVideoTracks();
-    console.log(`Adding ${videoTracks.length} video tracks to peer connection for:`, listenerId);
-    videoTracks.forEach(track => {
-      const sender = pc.addTrack(track, localStream);
-      console.log('Added video track:', track.label, 'enabled:', track.enabled, 'readyState:', track.readyState);
-      
-      // Set encoding parameters for video
-      const params = sender.getParameters();
-      if (!params.encodings) {
-        params.encodings = [{}];
-      }
-      params.encodings[0].maxBitrate = 2500000; // 2.5 Mbps for video
-      sender.setParameters(params).catch(err => console.log('Failed to set video encoding params:', err));
-    });
-  }
 
   // Handle ICE candidates
   pc.onicecandidate = (event) => {
