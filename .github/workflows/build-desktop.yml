@@ -25,8 +25,8 @@ jobs:
       - name: Build Windows installer
         working-directory: desktop
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run build
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+        run: npm run build -- --publish never
 
       - name: Upload artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
