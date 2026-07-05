@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self' https://audioparty.cineclark.studio https://cdn.socket.io;
+                 script-src 'self' https://cdn.socket.io;
+                 connect-src 'self' https://audioparty.cineclark.studio wss://audioparty.cineclark.studio;
+                 style-src 'self' 'unsafe-inline';
+                 img-src 'self' data:;">
+  <title>AudioParty</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Home Screen -->
+  <div id="home-screen" class="screen active">
+    <div class="app-header">
+      <h1 class="app-title">🎵 AudioParty</h1>
+      <span id="server-status" class="status-badge connecting">⏳ Connecting...</span>
+    </div>
+
+    <div class="card">
+      <h2>Host a Party</h2>
+      <p class="subtitle">Share audio from any app on your computer — Spotify, VLC, games, anything.</p>
+      <button id="host-btn" class="primary-btn" disabled>Select Audio Source</button>
+    </div>
+
+    <div class="info-box">
+      <h3>How it works</h3>
+      <ul>
+        <li>Pick a window or your entire screen as the audio source</li>
+        <li>Share the room code with friends so they can listen via browser</li>
+        <li>Works with Spotify, YouTube, VLC, games — any app</li>
+      </ul>
+    </div>
+
+    <div class="app-footer">
+      <span id="app-version" class="version-text"></span>
+    </div>
+  </div>
+
+  <!-- Source Selection Screen -->
+  <div id="source-screen" class="screen">
+    <div class="app-header">
+      <button id="back-from-sources-btn" class="back-btn">← Back</button>
+      <h2>Choose Audio Source</h2>
+    </div>
+    <p class="subtitle">Select your entire screen for system-wide audio, or a specific window.</p>
+    <ul id="source-list" class="source-list"></ul>
+  </div>
+
+  <!-- Loading Screen -->
+  <div id="loading-screen" class="screen">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p id="loading-text">Setting up...</p>
+    </div>
+  </div>
+
+  <!-- Hosting Screen -->
+  <div id="hosting-screen" class="screen">
+    <div class="status-indicator">
+      <span class="pulse"></span>
+      <span>Streaming Audio</span>
+    </div>
+
+    <div class="card room-card">
+      <div class="room-code-label">Room Code</div>
+      <div id="room-code-display" class="room-code">------</div>
+      <div id="share-url" class="share-url"></div>
+      <div class="participant-line">
+        👥 <span id="participant-count">1</span> / 10 listening
+      </div>
+    </div>
+
+    <div class="button-row">
+      <button id="copy-code-btn" class="secondary-btn">Copy Code</button>
+      <button id="copy-link-btn" class="secondary-btn">Copy Link</button>
+    </div>
+
+    <button id="end-party-btn" class="danger-btn">End Party</button>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
