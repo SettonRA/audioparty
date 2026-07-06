@@ -6,7 +6,7 @@ const SERVER_URL = 'https://audioparty.cineclark.studio';
 const socket = io(SERVER_URL, { transports: ['websocket', 'polling'] });
 let localStream     = null;
 let processedStream = null;
-let audioContext    = null;
+let gainAudioContext = null;
 let currentRoomCode = null;
 const peerConnections = new Map();
 
@@ -138,6 +138,9 @@ async function startHosting(sourceId, sourceName) {
     // Apply gain boost (same as web version)
     processedStream = applyGain(localStream);
 
+    // Start song detection (same as web version)
+    initializeSongDetection(localStream);
+
     // Create a room on the server
     document.getElementById('loading-text').textContent = 'Creating room...';
     socket.emit('create-room', (response) => {
@@ -150,7 +153,6 @@ async function startHosting(sourceId, sourceName) {
 
       currentRoomCode = response.roomId;
       document.getElementById('room-code-display').textContent = currentRoomCode;
-      document.getElementById('share-url').textContent = `${SERVER_URL}/${currentRoomCode}`;
       document.getElementById('participant-count').textContent = '1';
       showScreen('hosting-screen');
     });
@@ -170,13 +172,15 @@ async function startHosting(sourceId, sourceName) {
 }
 
 function stopHosting() {
+  stopSongDetection();
+
   if (processedStream) {
     processedStream.getTracks().forEach(t => t.stop());
     processedStream = null;
   }
-  if (audioContext) {
-    audioContext.close();
-    audioContext = null;
+  if (gainAudioContext) {
+    gainAudioContext.close();
+    gainAudioContext = null;
   }
   if (localStream) {
     localStream.getTracks().forEach(t => t.stop());
@@ -185,6 +189,19 @@ function stopHosting() {
   peerConnections.forEach(pc => pc.close());
   peerConnections.clear();
   currentRoomCode = null;
+
+  // Reset song display and Discord button for next party
+  const songContainer = document.getElementById('current-song-display');
+  if (songContainer) {
+    songContainer.innerHTML = '<div class="song-info"><div class="song-status">🎵 Listening for songs...</div></div>';
+  }
+  const discordBtn = document.getElementById('share-discord-btn');
+  if (discordBtn) {
+    discordSharingEnabled = false;
+    discordBtn.textContent = '📢 Share on Discord';
+    discordBtn.classList.remove('active');
+    discordBtn.disabled = false;
+  }
 }
 
 // --- Hosting screen controls ---
@@ -204,6 +221,22 @@ document.getElementById('end-party-btn').addEventListener('click', () => {
   stopHosting();
   showScreen('home-screen');
 });
+
+// --- Discord sharing ---
+let discordSharingEnabled = false;
+const shareDiscordBtn = document.getElementById('share-discord-btn');
+
+if (shareDiscordBtn) {
+  shareDiscordBtn.addEventListener('click', () => {
+    if (discordSharingEnabled || !currentRoomCode) return;
+
+    discordSharingEnabled = true;
+    shareDiscordBtn.textContent = '✅ Sharing on Discord';
+    shareDiscordBtn.classList.add('active');
+    shareDiscordBtn.disabled = true;
+    socket.emit('enable-discord-sharing', { roomId: currentRoomCode });
+  });
+}
 
 function flashButton(id, original, flash) {
   const btn = document.getElementById(id);
@@ -280,14 +313,211 @@ async function createPeerConnection(listenerId) {
 
 // --- Audio gain (same 3x boost as web version) ---
 function applyGain(stream) {
-  audioContext = new AudioContext();
-  const source = audioContext.createMediaStreamSource(stream);
-  const gain   = audioContext.createGain();
+  gainAudioContext = new AudioContext();
+  const source = gainAudioContext.createMediaStreamSource(stream);
+  const gain   = gainAudioContext.createGain();
   gain.gain.value = 3.0;
-  const dest = audioContext.createMediaStreamDestination();
+  const dest = gainAudioContext.createMediaStreamDestination();
   source.connect(gain);
   gain.connect(dest);
   return dest.stream;
+}
+
+// --- Song detection (same approach as web version) ---
+let sdAudioContext       = null;
+let sdAnalyserNode       = null;
+let sdDetectionInterval  = null;
+let sdMonitorInterval    = null;
+let sdIsActive           = false;
+let sdLastSong           = null;
+let sdWasSilent          = false;
+let sdSilenceStartTime   = null;
+let sdLastDetectionTime  = 0;
+const SD_SILENCE_THRESHOLD    = 0.01;
+const SD_MIN_SILENCE_DURATION = 2000;
+const SD_MIN_DETECTION_INTERVAL = 15000;
+
+function initializeSongDetection(stream) {
+  if (!stream) return;
+
+  try {
+    sdAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const source = sdAudioContext.createMediaStreamSource(stream);
+    sdAnalyserNode = sdAudioContext.createAnalyser();
+    source.connect(sdAnalyserNode);
+    sdAnalyserNode.fftSize = 2048;
+
+    sdIsActive = true;
+    setTimeout(() => detectCurrentSong(), 5000);
+    startSongAudioMonitoring();
+
+    sdDetectionInterval = setInterval(() => {
+      if (Date.now() - sdLastDetectionTime > 45000) detectCurrentSong();
+    }, 60000);
+  } catch (err) {
+    console.error('Failed to initialize song detection:', err);
+  }
+}
+
+function startSongAudioMonitoring() {
+  if (sdMonitorInterval) return;
+
+  const bufferLength = sdAnalyserNode.frequencyBinCount;
+  const dataArray = new Uint8Array(bufferLength);
+
+  sdMonitorInterval = setInterval(() => {
+    if (!sdAnalyserNode) return;
+
+    sdAnalyserNode.getByteTimeDomainData(dataArray);
+    let sum = 0;
+    for (let i = 0; i < bufferLength; i++) {
+      const normalized = (dataArray[i] - 128) / 128;
+      sum += normalized * normalized;
+    }
+    const rms = Math.sqrt(sum / bufferLength);
+    const isSilent = rms < SD_SILENCE_THRESHOLD;
+    const now = Date.now();
+
+    if (isSilent && !sdWasSilent) {
+      sdSilenceStartTime = now;
+      sdWasSilent = true;
+    } else if (!isSilent && sdWasSilent) {
+      const silenceDuration = now - sdSilenceStartTime;
+      const timeSinceLastDetection = now - sdLastDetectionTime;
+
+      if (silenceDuration >= SD_MIN_SILENCE_DURATION && timeSinceLastDetection >= SD_MIN_DETECTION_INTERVAL) {
+        setTimeout(() => detectCurrentSong(), 3000);
+      }
+
+      sdWasSilent = false;
+      sdSilenceStartTime = null;
+    }
+  }, 500);
+}
+
+function stopSongDetection() {
+  sdIsActive = false;
+
+  if (sdDetectionInterval) { clearInterval(sdDetectionInterval); sdDetectionInterval = null; }
+  if (sdMonitorInterval)   { clearInterval(sdMonitorInterval); sdMonitorInterval = null; }
+  if (sdAudioContext && sdAudioContext.state !== 'closed') {
+    sdAudioContext.close();
+    sdAudioContext = null;
+  }
+
+  sdAnalyserNode = null;
+  sdLastSong = null;
+  sdWasSilent = false;
+  sdSilenceStartTime = null;
+}
+
+async function detectCurrentSong() {
+  if (!sdAudioContext || !sdAnalyserNode || !localStream) return;
+
+  try {
+    if (!sdLastSong) updateSongDisplay({ status: 'detecting' });
+
+    const audioData = await captureAudioSample(10);
+    if (!audioData) {
+      updateSongDisplay({ status: 'error', message: 'Failed to capture audio' });
+      return;
+    }
+
+    const response = await fetch(`${SERVER_URL}/api/identify-song`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ audioData })
+    });
+
+    const result = await response.json();
+
+    if (result.success && result.song) {
+      sdLastSong = result.song;
+      sdLastDetectionTime = Date.now();
+      updateSongDisplay({ status: 'success', song: result.song });
+
+      socket.emit('song-detected', { roomId: currentRoomCode, song: result.song });
+    } else if (!sdLastSong) {
+      updateSongDisplay({ status: 'not-found', message: result.message || 'No match found' });
+    }
+  } catch (err) {
+    console.error('Song detection error:', err);
+    if (!sdLastSong) updateSongDisplay({ status: 'error', message: 'Detection failed' });
+  }
+}
+
+function captureAudioSample(durationSeconds) {
+  return new Promise((resolve) => {
+    if (!localStream) { resolve(null); return; }
+
+    try {
+      const audioTrack = localStream.getAudioTracks()[0];
+      if (!audioTrack) { resolve(null); return; }
+
+      const audioStream = new MediaStream([audioTrack]);
+      const chunks = [];
+      const mediaRecorder = new MediaRecorder(audioStream, { mimeType: 'audio/webm;codecs=opus' });
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        try {
+          const blob = new Blob(chunks, { type: 'audio/webm' });
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result.split(',')[1]);
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(blob);
+        } catch {
+          resolve(null);
+        }
+      };
+
+      mediaRecorder.onerror = () => resolve(null);
+
+      mediaRecorder.start();
+      setTimeout(() => {
+        if (mediaRecorder.state === 'recording') mediaRecorder.stop();
+      }, durationSeconds * 1000);
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
+function updateSongDisplay(data) {
+  const container = document.getElementById('current-song-display');
+  if (!container) return;
+
+  if (data.status === 'detecting') {
+    container.innerHTML = `
+      <div class="song-info detecting">
+        <div class="song-status">🎵 Detecting song...</div>
+      </div>
+    `;
+  } else if (data.status === 'success' && data.song) {
+    const song = data.song;
+    container.innerHTML = `
+      <div class="song-info">
+        <div class="song-title">${escapeHtml(song.title)}</div>
+        <div class="song-artist">${escapeHtml(song.artist)}</div>
+        ${song.album ? `<div class="song-album">${escapeHtml(song.album)}</div>` : ''}
+      </div>
+    `;
+  } else if (data.status === 'not-found') {
+    container.innerHTML = `
+      <div class="song-info not-found">
+        <div class="song-status">🎵 No song detected</div>
+      </div>
+    `;
+  } else if (data.status === 'error') {
+    container.innerHTML = `
+      <div class="song-info error">
+        <div class="song-status">❌ ${escapeHtml(data.message || 'Detection error')}</div>
+      </div>
+    `;
+  }
 }
 
 // --- Utility ---

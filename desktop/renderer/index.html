@@ -62,6 +62,10 @@
 
   <!-- Hosting Screen -->
   <div id="hosting-screen" class="screen">
+    <div class="app-header hosting-header">
+      <img src="assets/audioparty_logo.jpg" alt="AudioParty" class="app-logo app-logo-small">
+    </div>
+
     <div class="status-indicator">
       <span class="pulse"></span>
       <span>Streaming Audio</span>
@@ -70,15 +74,22 @@
     <div class="card room-card">
       <div class="room-code-label">Room Code</div>
       <div id="room-code-display" class="room-code">------</div>
-      <div id="share-url" class="share-url"></div>
       <div class="participant-line">
         👥 <span id="participant-count">1</span> / 10 listening
+      </div>
+    </div>
+
+    <!-- Current Song Display -->
+    <div id="current-song-display" class="song-display">
+      <div class="song-info">
+        <div class="song-status">🎵 Listening for songs...</div>
       </div>
     </div>
 
     <div class="button-row">
       <button id="copy-code-btn" class="secondary-btn">Copy Code</button>
       <button id="copy-link-btn" class="secondary-btn">Copy Link</button>
+      <button id="share-discord-btn" class="discord-btn">📢 Share on Discord</button>
     </div>
 
     <button id="end-party-btn" class="danger-btn">End Party</button>

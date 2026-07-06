@@ -38,6 +38,14 @@ body {
   margin-bottom: 28px;
 }
 
+.hosting-header {
+  margin-bottom: 16px;
+}
+
+.app-logo-small {
+  height: 100px;
+}
+
 .app-title { font-size: 1.6rem; font-weight: 700; }
 
 .app-logo {
@@ -96,6 +104,14 @@ body {
 .danger-btn { background: var(--danger-color); color: #fff; width: 100%; margin-top: 12px; }
 .danger-btn:hover { background: var(--danger-hover); }
 
+.discord-btn {
+  background: #5865F2;
+  color: #fff;
+}
+.discord-btn:hover { background: #4752C4; }
+.discord-btn.active { background: var(--success-color); cursor: not-allowed; }
+.discord-btn.active:hover { background: #059669; }
+
 .back-btn {
   background: transparent;
   color: var(--text-secondary);
@@ -105,7 +121,8 @@ body {
 .back-btn:hover { color: var(--text-primary); }
 
 .button-row { display: flex; gap: 12px; }
-.button-row .secondary-btn { flex: 1; }
+.button-row .secondary-btn,
+.button-row .discord-btn { flex: 1; }
 
 /* --- Info box --- */
 .info-box {
@@ -212,8 +229,30 @@ body {
 .room-card { text-align: center; margin-bottom: 16px; }
 .room-code-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
 .room-code { font-size: 2.8rem; font-weight: 800; letter-spacing: 0.15em; color: var(--primary-color); margin-bottom: 8px; }
-.share-url { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px; word-break: break-all; }
 .participant-line { font-size: 0.9rem; color: var(--text-secondary); }
+
+/* Song Display */
+.song-display {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.song-info { text-align: center; width: 100%; }
+.song-info.detecting { opacity: 0.7; }
+.song-info.not-found { opacity: 0.6; }
+.song-info.error { color: var(--danger-color); }
+
+.song-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 8px; color: var(--text-primary); }
+.song-artist { font-size: 1rem; color: var(--text-secondary); margin-bottom: 6px; }
+.song-album { font-size: 0.85rem; color: var(--text-secondary); opacity: 0.8; }
+.song-status { font-size: 0.95rem; color: var(--text-secondary); }
 
 /* --- Footer --- */
 .app-footer { margin-top: auto; text-align: center; }

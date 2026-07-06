@@ -1,12 +1,12 @@
 'use strict';
 
-const { app, BrowserWindow, ipcMain, desktopCapturer, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, desktopCapturer, shell, Menu } = require('electron');
 const path = require('path');
 
 function createWindow() {
   const win = new BrowserWindow({
     width: 720,
-    height: 900,
+    height: 1000,
     minWidth: 500,
     minHeight: 700,
     webPreferences: {
@@ -58,6 +58,7 @@ ipcMain.handle('get-audio-sources', async () => {
 ipcMain.handle('get-version', () => app.getVersion());
 
 app.whenReady().then(() => {
+  Menu.setApplicationMenu(null);
   createWindow();
 
   app.on('activate', () => {
