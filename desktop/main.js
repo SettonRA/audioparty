@@ -26,6 +26,13 @@ function createWindow() {
   // Show window only once content is loaded (avoids white flash)
   win.once('ready-to-show', () => win.show());
 
+  // F12 opens DevTools for debugging
+  win.webContents.on('before-input-event', (event, input) => {
+    if (input.key === 'F12') {
+      win.webContents.toggleDevTools();
+    }
+  });
+
   // Open external links in the system browser instead of Electron
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
