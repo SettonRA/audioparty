@@ -49,6 +49,14 @@ socket.on('disconnect', () => {
   }
 });
 
+// Handle session ended by admin or automatic expiration (e.g. 6-hour time limit)
+socket.on('host-disconnected', (data) => {
+  if (!localStream) return;
+  stopHosting();
+  alert(data && data.reason ? data.reason : 'Your session was ended by an administrator.');
+  showScreen('home-screen');
+});
+
 // --- Home screen ---
 document.getElementById('host-btn').addEventListener('click', async () => {
   await loadAudioSources();

@@ -247,15 +247,15 @@ socket.on('listener-left', (data) => {
   }
 });
 
-// Handle session ended by admin
+// Handle session ended by admin or automatic expiration
 socket.on('host-disconnected', (data) => {
-  console.log('Session ended by admin:', data);
+  console.log('Session ended:', data);
   
   // Stop streaming
   stopStreaming();
   
   // Show error message
-  alert('Your session was ended by an administrator.');
+  alert(data && data.reason ? data.reason : 'Your session was ended by an administrator.');
   
   // Return to home
   window.location.href = '/';

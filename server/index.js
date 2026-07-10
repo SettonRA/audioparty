@@ -20,6 +20,37 @@ const PORT = process.env.PORT || 3000;
 const roomManager = new RoomManager();
 const acrCloudService = new ACRCloudService();
 
+// Maximum time a session may stay active before being auto-terminated
+const SESSION_MAX_HOURS = parseFloat(process.env.SESSION_MAX_HOURS) || 6;
+const MAX_SESSION_DURATION_MS = SESSION_MAX_HOURS * 60 * 60 * 1000;
+const SESSION_EXPIRY_CHECK_INTERVAL_MS = 5 * 60 * 1000; // check every 5 minutes
+
+// Ends a room/session, notifying participants and cleaning up Discord + room state
+function terminateRoom(roomId, reason) {
+  const room = roomManager.getRoom(roomId);
+  if (!room) return false;
+
+  io.to(roomId).emit('host-disconnected', { reason });
+
+  if (room.discordSharingEnabled) {
+    discordService.partyEnded(room.id);
+  }
+
+  roomManager.deleteRoom(roomId);
+  console.log(`Room ${roomId} ended: ${reason}`);
+  return true;
+}
+
+// Periodically sweep for sessions that have exceeded the max duration
+setInterval(() => {
+  const now = Date.now();
+  for (const room of roomManager.getAllRooms()) {
+    if (now - room.createdAt >= MAX_SESSION_DURATION_MS) {
+      terminateRoom(room.id, 'Session reached the 6-hour time limit and was automatically ended');
+    }
+  }
+}, SESSION_EXPIRY_CHECK_INTERVAL_MS);
+
 // Initialize Discord bot
 discordService.initialize().catch(err => {
   console.error('Discord initialization error:', err);
@@ -97,24 +128,12 @@ app.post('/api/admin/end-session', basicAuth, (req, res) => {
     return res.status(400).json({ success: false, error: 'Room ID required' });
   }
 
-  const room = roomManager.getRoom(roomId);
-  
-  if (!room) {
+  const ended = terminateRoom(roomId, 'Session ended by admin');
+
+  if (!ended) {
     return res.status(404).json({ success: false, error: 'Room not found' });
   }
 
-  // Notify all participants that the room is being closed
-  io.to(roomId).emit('host-disconnected', { reason: 'Session ended by admin' });
-  
-  // Update Discord if sharing was enabled
-  if (room.discordSharingEnabled) {
-    discordService.partyEnded(room.id);
-  }
-  
-  // Delete the room
-  roomManager.deleteRoom(roomId);
-  
-  console.log(`Room ${roomId} ended by admin`);
   res.json({ success: true, message: 'Session ended successfully' });
 });
 
