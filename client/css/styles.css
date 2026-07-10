@@ -311,48 +311,6 @@ input[type="text"]:focus {
   display: none !important;
 }
 
-/* Desktop App Download Banner */
-.desktop-download-banner {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px 18px;
-  margin-bottom: 24px;
-  text-decoration: none;
-  color: var(--text-primary);
-  transition: border-color 0.2s, background 0.2s;
-}
-.desktop-download-banner:hover {
-  border-color: var(--primary-color);
-  background: var(--surface-light);
-}
-.desktop-download-icon { font-size: 1.6rem; flex-shrink: 0; }
-.desktop-download-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-}
-.desktop-download-text strong { font-size: 0.95rem; }
-.desktop-download-text span   { font-size: 0.8rem; color: var(--text-secondary); }
-.desktop-download-arrow { color: var(--text-secondary); font-size: 1.1rem; flex-shrink: 0; }
-.beta-badge {
-  display: inline-block;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  background: rgba(251, 191, 36, 0.15);
-  color: #fbbf24;
-  border: 1px solid rgba(251, 191, 36, 0.3);
-  border-radius: 4px;
-  padding: 1px 5px;
-  vertical-align: middle;
-  margin-left: 6px;
-}
-
 /* Status Indicator */
 .status-indicator {
   display: flex;
