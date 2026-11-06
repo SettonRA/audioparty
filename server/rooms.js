@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 class RoomManager {
   constructor() {
     this.rooms = new Map();
@@ -8,6 +10,8 @@ class RoomManager {
     const room = {
       id: roomId,
       hostId: hostId,
+      hostToken: crypto.randomBytes(16).toString('hex'), // lets the host reclaim the room after a reconnect
+      hostGraceTimer: null, // set while the host's socket is down
       participants: [hostId],
       createdAt: Date.now(),
       discordSharingEnabled: false,
@@ -52,6 +56,11 @@ class RoomManager {
   }
 
   deleteRoom(roomId) {
+    const room = this.rooms.get(roomId);
+    if (room && room.hostGraceTimer) {
+      clearTimeout(room.hostGraceTimer);
+      room.hostGraceTimer = null;
+    }
     return this.rooms.delete(roomId);
   }
 

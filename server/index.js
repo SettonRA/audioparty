@@ -13,8 +13,14 @@ const io = socketIO(server, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"]
-  }
+  },
+  // Tolerate brief network stalls / backgrounded tabs before declaring a socket dead
+  pingInterval: 25000,
+  pingTimeout: 60000
 });
+
+// How long a room survives after its host's socket drops, waiting for the host to reconnect
+const HOST_GRACE_MS = (parseInt(process.env.HOST_GRACE_SECONDS, 10) || 60) * 1000;
 
 const PORT = process.env.PORT || 3000;
 const roomManager = new RoomManager();
@@ -293,7 +299,38 @@ io.on('connection', (socket) => {
     const room = roomManager.createRoom(socket.id);
     socket.join(room.id);
     console.log(`Room created: ${room.id} by ${socket.id}`);
-    callback({ success: true, roomId: room.id });
+    callback({ success: true, roomId: room.id, hostToken: room.hostToken });
+  });
+
+  // Host reconnected after a socket drop: reclaim the room under the new socket id
+  socket.on('resume-host', (data, callback) => {
+    const respond = typeof callback === 'function' ? callback : () => {};
+    const room = data && roomManager.getRoom(data.roomId);
+
+    if (!room || room.hostToken !== data.hostToken) {
+      console.log(`resume-host rejected for ${socket.id} (room ${data && data.roomId} not found or bad token)`);
+      respond({ success: false, error: 'Room no longer exists' });
+      return;
+    }
+
+    if (room.hostGraceTimer) {
+      clearTimeout(room.hostGraceTimer);
+      room.hostGraceTimer = null;
+    }
+
+    const oldHostId = room.hostId;
+    room.hostId = socket.id;
+    room.participants = room.participants.map(id => (id === oldHostId ? socket.id : id));
+    socket.join(room.id);
+
+    console.log(`Host resumed room ${room.id}: ${oldHostId} -> ${socket.id}`);
+    io.to(room.id).emit('host-resumed', { hostId: socket.id });
+    respond({
+      success: true,
+      roomId: room.id,
+      listeners: room.participants.filter(id => id !== socket.id),
+      participantCount: room.participants.length
+    });
   });
 
   // Join an existing room
@@ -404,22 +441,23 @@ io.on('connection', (socket) => {
   });
 
   // Handle disconnection
-  socket.on('disconnect', () => {
-    console.log(`User disconnected: ${socket.id}`);
+  socket.on('disconnect', (reason) => {
+    console.log(`User disconnected: ${socket.id} (reason: ${reason})`);
     const room = roomManager.getRoomByParticipant(socket.id);
-    
+
     if (room) {
       if (room.hostId === socket.id) {
-        // Host left - notify all participants and close room
-        io.to(room.id).emit('host-disconnected');
-        
-        // Update Discord to show party ended (only if sharing was enabled)
-        if (room.discordSharingEnabled) {
-          discordService.partyEnded(room.id);
-        }
-        
-        roomManager.deleteRoom(room.id);
-        console.log(`Room ${room.id} closed - host disconnected`);
+        // Host's socket dropped - hold the room open briefly so the host can reconnect
+        const roomId = room.id;
+        io.to(roomId).emit('host-reconnecting', { graceSeconds: HOST_GRACE_MS / 1000 });
+        console.log(`Host of room ${roomId} dropped (${reason}); holding room for ${HOST_GRACE_MS / 1000}s`);
+
+        if (room.hostGraceTimer) clearTimeout(room.hostGraceTimer);
+        room.hostGraceTimer = setTimeout(() => {
+          room.hostGraceTimer = null;
+          console.log(`Room ${roomId} grace period expired - host did not return`);
+          terminateRoom(roomId, 'Host disconnected');
+        }, HOST_GRACE_MS);
       } else {
         // Listener left - notify host
         roomManager.removeParticipant(room.id, socket.id);

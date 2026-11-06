@@ -10,6 +10,7 @@ const screens = {
 let currentMode = null; // 'host' or 'listener'
 let pendingRoomCode = null;
 let currentRoomCode = null;
+let currentHostToken = null; // secret that lets the host reclaim the room after a reconnect
 let currentShareLink = null;
 
 // Check for room code in URL path on load
@@ -115,6 +116,7 @@ function createRoom() {
   socket.emit('create-room', (response) => {
     if (response.success) {
       currentRoomCode = response.roomId;
+      currentHostToken = response.hostToken;
       currentShareLink = `${window.location.origin}/${currentRoomCode}`;
       
       document.getElementById('host-room-code').textContent = currentRoomCode;
@@ -214,9 +216,8 @@ document.getElementById('copy-link-btn').addEventListener('click', async () => {
 // Socket event handlers
 socket.on('disconnect', () => {
   console.log('Disconnected from server');
-  if (currentMode === 'host') {
-    alert('Lost connection to server. Your party has ended. Please refresh to start a new party.');
-  } else if (currentMode === 'listener') {
+  // Host: host.js keeps the stream alive and reclaims the room on reconnect.
+  if (currentMode === 'listener') {
     showError('Lost connection to server');
   }
 });
@@ -234,5 +235,26 @@ socket.on('connect', () => {
 socket.on('host-disconnected', () => {
   if (currentMode === 'listener') {
     showError('Host ended the party');
+  }
+});
+
+// Host's connection dropped; the server is holding the room open for a short grace period
+socket.on('host-reconnecting', () => {
+  if (currentMode === 'listener') {
+    const status = document.getElementById('connection-status');
+    status.textContent = '🟡 Host reconnecting...';
+    status.classList.remove('connected');
+  }
+});
+
+// Host is back (new socket id); point signaling at it and rebuild the stream if needed
+socket.on('host-resumed', (data) => {
+  if (currentMode === 'listener') {
+    hostId = data.hostId;
+    const status = document.getElementById('connection-status');
+    if (peerConnection && peerConnection.connectionState === 'connected') {
+      status.textContent = '🟢 Connected';
+      status.classList.add('connected');
+    }
   }
 });

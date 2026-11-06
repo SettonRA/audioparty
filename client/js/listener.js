@@ -184,6 +184,15 @@ socket.on('offer', async (data) => {
     return;
   }
   
+  // A new offer on a peer connection that already negotiated means the host rebuilt
+  // its side after reconnecting: start over with a fresh peer connection.
+  if (peerConnection.remoteDescription) {
+    console.log('Fresh offer on an established connection - rebuilding peer connection');
+    peerConnection.close();
+    iceCandidateQueue = [];
+    setupPeerConnection();
+  }
+
   try {
     console.log('Setting remote description...');
     await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));

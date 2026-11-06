@@ -119,14 +119,72 @@ if (document.readyState === 'loading') {
   }
 }
 
-// Handle server disconnect
-socket.on('disconnect', () => {
-  if (localStream) {
-    console.log('Server disconnected while hosting');
-    stopStreaming();
-    alert('Lost connection to server. Your party has ended.');
-    setTimeout(() => location.reload(), 1000);
+// Handle server disconnect: keep capturing audio and try to reclaim the room.
+// Socket.IO reconnects automatically; the server holds the room open for a grace period.
+let hostSocketDropped = false;
+
+function setHostBanner(text) {
+  let banner = document.getElementById('host-reconnect-banner');
+  if (!text) {
+    if (banner) banner.remove();
+    return;
   }
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'host-reconnect-banner';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;padding:10px;text-align:center;' +
+      'background:#fb923c;color:#000;font-weight:600;z-index:9999;';
+    document.body.appendChild(banner);
+  }
+  banner.textContent = text;
+}
+
+function endHostSessionAfterFailedResume(message) {
+  setHostBanner(null);
+  stopStreaming();
+  alert(message);
+  location.reload();
+}
+
+socket.on('disconnect', (reason) => {
+  if (localStream) {
+    console.log('Server disconnected while hosting:', reason);
+    hostSocketDropped = true;
+    setHostBanner('⚠️ Connection lost - reconnecting... (your party is being held open)');
+  }
+});
+
+socket.on('connect', () => {
+  if (!hostSocketDropped || !localStream) return;
+
+  console.log('Reconnected while hosting - resuming room', currentRoomCode);
+  socket.emit('resume-host', { roomId: currentRoomCode, hostToken: currentHostToken }, async (response) => {
+    if (!response || !response.success) {
+      endHostSessionAfterFailedResume('Lost connection for too long. Your party has ended.');
+      return;
+    }
+
+    hostSocketDropped = false;
+    setHostBanner(null);
+    updateParticipantCount(response.participantCount);
+
+    // Re-establish streams: listener ids are unchanged, but old peer connections
+    // may be dead after a long outage, so rebuild any that aren't connected.
+    for (const listenerId of response.listeners) {
+      const existing = peerConnections.get(listenerId);
+      if (existing && existing.connectionState === 'connected') continue;
+      if (existing) existing.close();
+      await createPeerConnection(listenerId);
+    }
+
+    // Drop connections for listeners that left during the outage
+    for (const [listenerId, pc] of peerConnections) {
+      if (!response.listeners.includes(listenerId)) {
+        pc.close();
+        peerConnections.delete(listenerId);
+      }
+    }
+  });
 });
 
 async function startAudioCapture() {
