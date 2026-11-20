@@ -10,6 +10,8 @@ const screens = {
 let currentMode = null; // 'host' or 'listener'
 let pendingRoomCode = null;
 let currentRoomCode = null;
+let listenerRoomCode = null; // room the listener is in, kept so it can rejoin after a socket drop
+let listenerRejoining = false; // true from a listener's socket drop until the rejoin succeeds
 let currentHostToken = null; // secret that lets the host reclaim the room after a reconnect
 let currentShareLink = null;
 
@@ -144,7 +146,16 @@ socket.on('join-room-response', (response) => {
     document.getElementById('listener-room-code').textContent = roomCode;
     document.getElementById('listener-participant-count').textContent = response.participantCount || '-';
     console.log('Joined room:', roomCode, 'Host ID:', response.hostId);
-    
+    listenerRoomCode = roomCode;
+
+    if (listenerRejoining) {
+      // Back after a socket drop: reset the UI to "connecting" until the new stream arrives
+      listenerRejoining = false;
+      document.getElementById('listener-error').classList.add('hidden');
+      document.getElementById('listener-playing').classList.add('hidden');
+      document.getElementById('listener-connecting').classList.remove('hidden');
+    }
+
     if (!response.hostId) {
       console.error('ERROR: hostId is missing from response!');
       showError('Server error: missing host information');
@@ -154,6 +165,7 @@ socket.on('join-room-response', (response) => {
     // Listener logic will handle connection
     initListener(response.hostId);
   } else {
+    listenerRejoining = false;
     const errorMsg = response.error || 'Failed to join room';
     console.error('Join room failed:', errorMsg);
     showError(errorMsg);
@@ -214,10 +226,20 @@ document.getElementById('copy-link-btn').addEventListener('click', async () => {
 });
 
 // Socket event handlers
-socket.on('disconnect', () => {
-  console.log('Disconnected from server');
+socket.on('disconnect', (reason) => {
+  console.log('Disconnected from server:', reason);
   // Host: host.js keeps the stream alive and reclaims the room on reconnect.
-  if (currentMode === 'listener') {
+  if (currentMode === 'listener' && listenerRoomCode) {
+    // Socket.IO reconnects on its own; we rejoin the room once it does (see 'connect' below)
+    listenerRejoining = true;
+    const status = document.getElementById('connection-status');
+    status.textContent = '🟡 Reconnecting...';
+    status.classList.remove('connected');
+    // 'io server disconnect' means the server kicked us, and Socket.IO won't retry by itself
+    if (reason === 'io server disconnect') {
+      socket.connect();
+    }
+  } else if (currentMode === 'listener') {
     showError('Lost connection to server');
   }
 });
@@ -225,6 +247,11 @@ socket.on('disconnect', () => {
 // Handle reconnection
 socket.on('connect', () => {
   console.log('Connected/Reconnected to server');
+  // Listener whose socket dropped mid-party: rejoin the same room under the new socket id
+  if (listenerRejoining && listenerRoomCode) {
+    console.log('Rejoining room', listenerRoomCode);
+    joinRoom(listenerRoomCode);
+  }
   // If we have a pending room code from URL, join now
   if (pendingRoomCode) {
     joinRoom(pendingRoomCode);

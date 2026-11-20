@@ -27,6 +27,15 @@ function initListener(receivedHostId) {
   console.log('initListener called with hostId:', receivedHostId);
   hostId = receivedHostId;
   console.log('hostId set to:', hostId);
+
+  // Rejoining after a socket drop: discard the old connection and start clean
+  if (peerConnection) {
+    peerConnection.onconnectionstatechange = null;
+    peerConnection.oniceconnectionstatechange = null;
+    peerConnection.close();
+    peerConnection = null;
+  }
+  iceCandidateQueue = [];
   setupPeerConnection();
 }
 
