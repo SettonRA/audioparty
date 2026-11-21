@@ -1,0 +1,203 @@
+﻿<Window x:Class="AudioPartyDesktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AudioPartyDesktop"
+        mc:Ignorable="d"
+        Title="AudioParty" Height="845" Width="480"
+        MinHeight="700" MinWidth="420"
+        Background="#0F172A"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="Primary" Color="#6366F1"/>
+        <SolidColorBrush x:Key="PrimaryHover" Color="#4F46E5"/>
+        <SolidColorBrush x:Key="Surface" Color="#1E293B"/>
+        <SolidColorBrush x:Key="SurfaceLight" Color="#334155"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#F1F5F9"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#94A3B8"/>
+        <SolidColorBrush x:Key="Success" Color="#10B981"/>
+        <SolidColorBrush x:Key="Danger" Color="#EF4444"/>
+        <SolidColorBrush x:Key="Discord" Color="#5865F2"/>
+
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource Primary}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="{StaticResource SurfaceLight}"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+
+        <Style x:Key="DiscordButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="{StaticResource Discord}"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="{StaticResource Danger}"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" HorizontalAlignment="Stretch" Margin="0,0,0,24">
+            <Image Source="Assets/audioparty_logo.jpg" Stretch="Uniform"/>
+            <Border x:Name="StatusPill" Background="{StaticResource SurfaceLight}" CornerRadius="12" Padding="10,4" Margin="0,12,0,0" HorizontalAlignment="Center">
+                <TextBlock x:Name="StatusText" Text="⏳ Connecting..." Foreground="{StaticResource TextPrimary}" FontSize="12"/>
+            </Border>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+        <!-- Home Panel -->
+        <StackPanel x:Name="HomePanel" Visibility="Visible">
+            <Border Background="{StaticResource Surface}" CornerRadius="12" Padding="24" Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="Host a Party" Foreground="{StaticResource TextPrimary}" FontSize="18" FontWeight="Bold" Margin="0,0,0,14"/>
+                    <TextBlock Text="AUDIO SOURCE" Foreground="{StaticResource TextSecondary}" FontSize="11" FontWeight="Bold" Margin="0,0,0,6"/>
+                    <Grid Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox x:Name="SourceComboBox" Grid.Column="0" Padding="8,6" FontSize="13" DropDownOpened="SourceComboBox_DropDownOpened"/>
+                        <Button Grid.Column="2" x:Name="RefreshSourcesButton" ToolTip="Refresh the list of apps playing audio"
+                                Style="{StaticResource SecondaryButton}" Width="52" Click="RefreshSourcesButton_Click">
+                            <TextBlock x:Name="RefreshIcon" Text="↻" FontSize="15" RenderTransformOrigin="0.5,0.5">
+                                <TextBlock.RenderTransform>
+                                    <RotateTransform x:Name="RefreshRotation" Angle="0"/>
+                                </TextBlock.RenderTransform>
+                            </TextBlock>
+                        </Button>
+                    </Grid>
+                    <TextBlock x:Name="NoSourcesText" Text="No apps are playing audio right now. Start playback, then press ↻."
+                               Foreground="{StaticResource TextSecondary}" FontSize="11" TextWrapping="Wrap" Margin="0,-14,0,16" Visibility="Collapsed"/>
+                    <Button x:Name="HostButton" Content="Start Hosting" Style="{StaticResource PrimaryButton}"
+                            IsEnabled="False" Click="HostButton_Click"/>
+                </StackPanel>
+            </Border>
+
+            <Border Background="{StaticResource Surface}" CornerRadius="12" Padding="24" Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="Join a Party" Foreground="{StaticResource TextPrimary}" FontSize="18" FontWeight="Bold" Margin="0,0,0,14"/>
+                    <TextBox x:Name="JoinCodeBox" Padding="8,7" FontSize="15" CharacterCasing="Upper"
+                             VerticalContentAlignment="Center" Margin="0,0,0,14" KeyDown="JoinCodeBox_KeyDown"/>
+                    <Button x:Name="JoinButton" Content="Join Party" Style="{StaticResource PrimaryButton}"
+                            IsEnabled="False" Click="JoinButton_Click"/>
+                </StackPanel>
+            </Border>
+
+            <Button x:Name="HelpButton" Content="❓  How to use AudioParty" Style="{StaticResource SecondaryButton}" Click="HelpButton_Click"/>
+
+            <TextBlock x:Name="VersionText" Foreground="{StaticResource SurfaceLight}" FontSize="10"
+                       HorizontalAlignment="Center" Margin="0,20,0,0"/>
+        </StackPanel>
+
+        <!-- Hosting Panel -->
+        <StackPanel x:Name="HostingPanel" Visibility="Collapsed">
+            <Border Background="{StaticResource Surface}" CornerRadius="12" Padding="16,12" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Room Code:" Foreground="{StaticResource TextSecondary}" FontSize="13" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock x:Name="RoomCodeText" Text="------" Foreground="{StaticResource Primary}" FontSize="18" FontWeight="Black" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" x:Name="ParticipantText" Text="👥 1/10" Foreground="{StaticResource TextSecondary}" FontSize="13"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="Listeners (including you)"/>
+                    <TextBlock Grid.Column="2" x:Name="HostRelayText" Text="⏳ Relay..." Foreground="{StaticResource TextSecondary}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <Border Background="#1A10B981" CornerRadius="8" Padding="12" Margin="0,0,0,16">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <StackPanel>
+                        <TextBlock Text="Streaming Audio" Foreground="{StaticResource Success}" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="SourceText" Foreground="{StaticResource TextSecondary}" FontSize="11" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <local:SongPanel x:Name="HostSongPanel" Margin="0,0,0,16"/>
+
+            <Grid Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" x:Name="CopyCodeButton" Content="Copy Code" Style="{StaticResource SecondaryButton}" Click="CopyCodeButton_Click"/>
+                <Button Grid.Column="2" x:Name="CopyLinkButton" Content="Copy Link" Style="{StaticResource SecondaryButton}" Click="CopyLinkButton_Click"/>
+            </Grid>
+
+            <Button x:Name="DiscordButton" Content="📢 Share on Discord" Style="{StaticResource DiscordButton}" Margin="0,0,0,10" Click="DiscordButton_Click"/>
+
+            <Button x:Name="EndPartyButton" Content="End Party" Style="{StaticResource DangerButton}" Click="EndPartyButton_Click"/>
+        </StackPanel>
+
+        <!-- Listening Panel -->
+        <StackPanel x:Name="ListeningPanel" Visibility="Collapsed">
+            <Border Background="{StaticResource Surface}" CornerRadius="12" Padding="16,12" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Room Code:" Foreground="{StaticResource TextSecondary}" FontSize="13" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock x:Name="ListenerRoomCodeText" Text="------" Foreground="{StaticResource Primary}" FontSize="18" FontWeight="Black" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" x:Name="ListenerParticipantText" Text="👥 -/10" Foreground="{StaticResource TextSecondary}" FontSize="13"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="Listeners (including the host)"/>
+                    <TextBlock Grid.Column="2" x:Name="ListenerStatusText" Text="🟡 Connecting..." Foreground="{StaticResource TextPrimary}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <local:SongPanel x:Name="ListenerSongPanel" IdleText="🎵 Waiting for song info..." Margin="0,0,0,16"/>
+
+            <Border Background="{StaticResource Surface}" CornerRadius="12" Padding="16,12" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="44"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="🔊" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <Slider Grid.Column="1" x:Name="VolumeSlider" Minimum="0" Maximum="100" Value="50" VerticalAlignment="Center"
+                            ValueChanged="VolumeSlider_ValueChanged"/>
+                    <TextBlock Grid.Column="2" x:Name="VolumeText" Text="50%" Foreground="{StaticResource TextSecondary}" FontSize="12"
+                               HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
+            <Button x:Name="LeaveButton" Content="Leave Party" Style="{StaticResource DangerButton}" Click="LeaveButton_Click"/>
+        </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

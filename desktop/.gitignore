@@ -1,0 +1,11 @@
+# .NET build output
+bin/
+obj/
+*_wpftmp.csproj
+
+# Portable release build (desktop/build-release.ps1); served from the web server's downloads/ folder instead
+dist/
+
+# IDE
+.vs/
+*.user
