@@ -27,14 +27,10 @@
                 <button id="join-cancel-btn" class="text-btn">Cancel</button>
             </div>
 
-            <div id="desktop-download" class="download-card hidden">
-                <div class="download-text">
-                    <strong>&#128187; Windows desktop app</strong>
-                    <span>Share just one app's audio (Spotify, VLC, games) instead of a whole browser tab. No install needed, just run it.</span>
-                    <small>If Windows SmartScreen appears, choose <em>More info</em> then <em>Run anyway</em>.</small>
-                </div>
-                <a id="desktop-download-btn" class="download-btn" href="/download/desktop" download>Download<span id="desktop-download-size"></span></a>
-            </div>
+            <a id="desktop-download-btn" class="download-btn hidden" href="/download/desktop" download>
+                Download Desktop App
+                <span id="desktop-download-size">(Windows)</span>
+            </a>
 
             <div class="info-box">
                 <h3>How it works:</h3>
@@ -78,6 +74,15 @@
                     <li><strong>Solution:</strong> Just click back to the AudioParty tab after selecting your audio source</li>
                     <li><strong>Tip:</strong> Pin the AudioParty tab or open it in a separate window for easier access</li>
                 </ul>
+
+                <div id="desktop-help" class="hidden">
+                    <h4>Windows Desktop App:</h4>
+                    <ul>
+                        <li><strong>What it does:</strong> Share just one app's audio (Spotify, VLC, games) instead of a whole browser tab, and join parties without a browser</li>
+                        <li><strong>No install needed:</strong> It's a single file - download it and run it (Windows 10 version 2004 or newer)</li>
+                        <li><strong>SmartScreen warning:</strong> If Windows says it protected your PC, choose <em>More info</em> then <em>Run anyway</em></li>
+                    </ul>
+                </div>
 
                 <button id="close-troubleshooting-btn" class="secondary-btn">Close</button>
             </div>

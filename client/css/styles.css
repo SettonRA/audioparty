@@ -566,68 +566,34 @@ input[type="range"]::-moz-range-thumb {
   }
 }
 
-/* Desktop app download card */
-.download-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: var(--surface);
-  padding: 16px 20px;
-  border-radius: 12px;
-  border-left: 4px solid var(--primary-color);
-  margin-bottom: 24px;
-}
-
-.download-card.hidden {
-  display: none;
-}
-
-.download-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-  min-width: 0;
-}
-
-.download-text span,
-.download-text small {
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-.download-text small {
-  font-size: 0.78rem;
-  opacity: 0.8;
-}
-
+/* Desktop app download button */
 .download-btn {
-  flex-shrink: 0;
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
   align-items: center;
-  background: var(--primary-color);
-  color: #fff;
+  gap: 2px;
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: 24px;
+  padding: 14px 24px;
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
   font-weight: 600;
   text-decoration: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
 }
 
 .download-btn:hover {
-  background: var(--primary-hover);
+  background: var(--surface-light);
+  border-color: var(--primary-color);
 }
 
 .download-btn span {
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 400;
-  opacity: 0.85;
-}
-
-@media (max-width: 520px) {
-  .download-card {
-    flex-direction: column;
-    align-items: stretch;
-  }
+  color: var(--text-secondary);
 }
