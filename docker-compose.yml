@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   audioparty:
     image: audioparty:latest
@@ -12,6 +10,9 @@ services:
       - "3000:3000"
     env_file:
       - .env
+    volumes:
+      # Desktop app download: drop AudioParty.exe in ./downloads on the host (read-only in the container)
+      - ./downloads:/app/downloads:ro
     environment:
       - NODE_ENV=production
       - PORT=3000

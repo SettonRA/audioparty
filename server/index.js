@@ -1,8 +1,9 @@
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
 const path = require('path');
+const fs = require('fs');
 const RoomManager = require('./rooms');
 const ACRCloudService = require('./acrcloud-service');
 const discordService = require('./discord-service');
@@ -143,6 +144,61 @@ app.post('/api/admin/end-session', basicAuth, (req, res) => {
   res.json({ success: true, message: 'Session ended successfully' });
 });
 
+// ---- Desktop app download -------------------------------------------------------------
+// Either serve a file straight from this server (DESKTOP_DOWNLOAD_FILE, default downloads/AudioParty.exe)
+// or point at an external location (DESKTOP_DOWNLOAD_URL, e.g. a GitHub release). The URL wins if both are set.
+const DESKTOP_DOWNLOAD_FILE = path.resolve(__dirname, '..', process.env.DESKTOP_DOWNLOAD_FILE || 'downloads/AudioParty.exe');
+const DESKTOP_DOWNLOAD_URL = (() => {
+  const raw = (process.env.DESKTOP_DOWNLOAD_URL || '').trim();
+  if (!raw) return '';
+  try {
+    const { protocol } = new URL(raw);
+    if (protocol === 'http:' || protocol === 'https:') return raw;
+  } catch (e) { /* fall through */ }
+  console.warn('DESKTOP_DOWNLOAD_URL ignored: it must be an http(s) URL');
+  return '';
+})();
+
+function getDesktopDownload() {
+  if (DESKTOP_DOWNLOAD_URL) {
+    const name = decodeURIComponent(path.basename(new URL(DESKTOP_DOWNLOAD_URL).pathname)) || 'AudioParty';
+    return { available: true, external: true, url: '/download/desktop', filename: name };
+  }
+
+  try {
+    const stats = fs.statSync(DESKTOP_DOWNLOAD_FILE);
+    if (stats.isFile()) {
+      return {
+        available: true,
+        external: false,
+        url: '/download/desktop',
+        filename: path.basename(DESKTOP_DOWNLOAD_FILE),
+        size: stats.size,
+        updated: stats.mtime.toISOString()
+      };
+    }
+  } catch (e) { /* file not there: no download offered */ }
+
+  return { available: false };
+}
+
+// Tells the web UI whether to show the download button
+app.get('/api/desktop-download', (req, res) => {
+  res.set('Cache-Control', 'no-cache');
+  res.json(getDesktopDownload());
+});
+
+app.get('/download/desktop', (req, res) => {
+  const info = getDesktopDownload();
+  if (!info.available) {
+    return res.status(404).send('The desktop app download is not available');
+  }
+
+  console.log(`Desktop app download requested (${info.external ? 'redirect' : info.filename})`);
+  if (info.external) return res.redirect(DESKTOP_DOWNLOAD_URL);
+  res.download(DESKTOP_DOWNLOAD_FILE, info.filename);
+});
+
 // API endpoint to get ICE server configuration
 app.get('/api/ice-servers', (req, res) => {
   const iceServers = {
@@ -236,7 +292,7 @@ app.get('/api/turn-status', async (req, res) => {
 
 // Catch-all route to serve index.html for room codes (enables URL-based room joining)
 // Only match paths that look like room codes (6 alphanumeric characters)
-app.get('/:roomCode([A-Z0-9]{6})', (req, res) => {
+app.get(/^\/[A-Z0-9]{6}$/, (req, res) => {
   res.sendFile(path.join(__dirname, '../client/index.html'));
 });
 

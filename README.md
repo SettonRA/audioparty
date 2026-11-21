@@ -38,12 +38,40 @@
 - **ACRCloud API**: Audio fingerprinting for song recognition
 - **Discord.js**: Bot integration for Discord channel updates
 - **Signaling**: Socket.io for peer coordination and song metadata broadcast
+- **Desktop app** (`desktop/`): native .NET 10 / WPF app for Windows that can host a party from a single application's audio, or join one as a listener
+
+## 🖥️ Desktop App (Windows)
+
+The desktop app lets a host share the audio of **one application** (for example Spotify or VLC) instead of the whole system, which a browser cannot do. It can also join parties as a listener, and shows the detected song.
+
+**For users:** download `AudioParty.exe` from the website's landing page and run it. It is a single portable file: nothing to install, no .NET needed, and it can run from any folder or a USB stick. Per-app capture needs Windows 10 version 2004 or newer. The exe is not code-signed, so Windows SmartScreen may warn on first run: choose *More info*, then *Run anyway*.
+
+**Building a release** (needs the [.NET 10 SDK](https://dotnet.microsoft.com/download)):
+
+```powershell
+cd desktop
+./build-release.ps1                      # writes desktop/dist/AudioParty.exe
+./build-release.ps1 -Destination "user@server:~/audioparty/downloads/AudioParty.exe"   # build and upload via scp
+```
+
+- Run from source while developing: `cd desktop && dotnet run`
+- The app connects to the server configured as `ServerUrl` in `desktop/MainWindow.xaml.cs`.
+- Diagnostics are written to `%LocalAppData%/AudioParty/audioparty-debug.log`.
+
+### Serving the download from your own server
+
+The landing page shows a download card only when a file is available. Put the built `AudioParty.exe` in the `downloads/` folder next to `docker-compose.yml` on the server (it is mounted read-only into the container and is git-ignored, so the exe never goes into the repo or the image). No restart is needed when you replace the file.
+
+Optional `.env` settings:
+
+- `DESKTOP_DOWNLOAD_FILE`: file to serve (default `downloads/AudioParty.exe`; relative to the project folder or absolute).
+- `DESKTOP_DOWNLOAD_URL`: serve an external location instead (for example a GitHub release); the button then redirects there. Wins over the file if both are set.
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js 14+ and npm
+- Node.js 24+ and npm
 - Modern browser (Chrome or Edge)
 
 ### Installation

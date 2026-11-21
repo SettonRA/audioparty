@@ -1,5 +1,5 @@
 # Build stage for production-ready Node.js application
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -8,14 +8,14 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install production dependencies only
-RUN npm install --omit=dev
+RUN npm ci --omit=dev
 
 # Copy application files
 COPY server ./server
 COPY client ./client
 
 # Production stage
-FROM node:20-alpine
+FROM node:24-alpine
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \

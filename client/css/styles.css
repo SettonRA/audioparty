@@ -565,3 +565,69 @@ input[type="range"]::-moz-range-thumb {
     font-size: 1rem;
   }
 }
+
+/* Desktop app download card */
+.download-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+  padding: 16px 20px;
+  border-radius: 12px;
+  border-left: 4px solid var(--primary-color);
+  margin-bottom: 24px;
+}
+
+.download-card.hidden {
+  display: none;
+}
+
+.download-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.download-text span,
+.download-text small {
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.download-text small {
+  font-size: 0.78rem;
+  opacity: 0.8;
+}
+
+.download-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--primary-color);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.download-btn:hover {
+  background: var(--primary-hover);
+}
+
+.download-btn span {
+  font-size: 0.72rem;
+  font-weight: 400;
+  opacity: 0.85;
+}
+
+@media (max-width: 520px) {
+  .download-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
